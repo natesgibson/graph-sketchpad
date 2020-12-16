@@ -1,1 +1,1 @@
-npx webpack
+To compile 'main.js' run the following command in the project's root directory: npx webpack
