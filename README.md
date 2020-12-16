@@ -1,4 +1,4 @@
-# A Graph Theorist's sketchpad
+# A Graph Theorist's Sketchpad
 
 ## Summary
 
