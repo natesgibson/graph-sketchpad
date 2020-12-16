@@ -5,3 +5,13 @@
 The project is a webapp developed as my final project for the course MATH/CPT_S 453 Graph Theory at WSU for Fall 2020.
 
 It is a graph sketchpad, allowing the user to sketch a graph and perform various graph operations.
+
+## Files
+### dist
+Contains intex.html and style.css which I used to style the webapp. main.js is built by Node.js.
+
+### node_modules
+Node.js stuff.
+
+### src
+Contains index.js which is where I did all of my scripting.
