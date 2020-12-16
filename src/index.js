@@ -2,7 +2,15 @@
 import {fabric} from 'fabric';
 var MinHeap = require('mnemonist/heap').MinHeap;
 
-const VERTEX_RADIUS = 15;
+const VERTEX_RADIUS = 15; // vertex fontSize
+const LOOP_Y_OFFSET = -33; // y-offset for loops
+
+const VERTEX_COLOR_1 = 'MediumAquaMarine';
+const VERTEX_COLOR_2 = 'CornflowerBlue';
+const VERTEX_COLOR_3 = 'Plum';
+
+const EDGE_COLOR = 'darkgrey';
+const ID_COLOR = '#333333';
 
 
 (function() {
@@ -36,15 +44,15 @@ const VERTEX_RADIUS = 15;
         graph = new Graph();
         updateUI();
 
-        // Events:
+        // Other Events:
         document.addEventListener('keydown', keyDownSwitch);
         canvas.on('object:moving', function () {
             updateEdges();
-            updateVertices();
+            updateVertexIDs();
         });
         canvas.on('object:moving', function () {
             updateEdges();
-            updateVertices();
+            updateVertexIDs();
         });
     }
 
@@ -66,28 +74,80 @@ const VERTEX_RADIUS = 15;
         document.getElementById('edges').innerText = numEdges + edgeText;
     }
 
-    // Calculates the mouse position in the canvas and updates mousePos.
-    function calcMousePos(e) {
-        let pointer = canvas.getPointer(e);
-        mousePos.x = pointer.x;
-        mousePos.y = pointer.y;
-    }
-
     // Calls functions on key down event based on which key was pressed.
     function keyDownSwitch(e) {
         if (e.keyCode === 86) {
             addVertex(e); // v
         } else if (e.keyCode === 69) {
             addEdge(); // e
-        } else if (e.keyCode === 46) {
-            deleteSelected(); // Delete
+        } else if (e.keyCode === 46 || e.keyCode === 8 || e.keyCode === 68) {
+            deleteSelected(); // Delete or backspace or d
         } else if (e.keyCode == 49 || e.keyCode == 97) {
-            changeColor('MediumAquaMarine'); // 1 or numpad 1
+            changeColor(VERTEX_COLOR_1); // 1 or numpad 1
         } else if (e.keyCode == 50 || e.keyCode == 98) {
-            changeColor('CornflowerBlue'); // 2 or numpad 2
+            changeColor(VERTEX_COLOR_2); // 2 or numpad 2
         } else if (e.keyCode == 51 || e.keyCode == 99) {
-            changeColor('Plum'); // 3 or numpad 3
+            changeColor(VERTEX_COLOR_3); // 3 or numpad 3
         }
+    }
+
+
+
+    // Add a new vertex to graph at mouse position.
+    function addVertex(e) {
+        // If mouse in canvas and nothing selected:
+        if (inCanvas && !canvas.getActiveObject()) {
+            let posX = mousePos.x;
+            let posY = mousePos.y;
+
+            let vertex = graph.addVertex(posX, posY);
+            canvas.add(vertex.circle);
+            canvas.add(vertex.text);
+            canvas.bringToFront(vertex.text);
+
+            canvas.renderAll();
+            updateUI();
+        }
+    }
+
+    // Add a new edge to graph.
+    function addEdge(e) {
+        let active = canvas.getActiveObjects();
+        let oneVertexActive = active.length == 1 && active[0].get('type') == 'circle';
+        let twoVerticesActive = active.length == 2 && active[0].get('type') == 'circle' && active[0].get('type') == 'circle';
+
+        if (oneVertexActive || twoVerticesActive) {
+            let v1 = active[0].id;
+            let v2 = active[0].id;
+            if (twoVerticesActive) {
+                v2 = active[1].id;
+            }
+
+            let edge = graph.addEdge(v1, v2);
+
+            canvas.add(edge.line);
+            canvas.bringToFront(edge.line);
+            canvas.renderAll();
+            updateUI();
+        }
+    }
+
+    // Deletes all selected objects from graph and canvas.
+    function deleteSelected(e) {
+        for (var object of canvas.getActiveObjects()) {
+            canvas.remove(object);
+
+            // Graph updates:
+            if (object.get('type') == 'circle') {
+                canvas.remove(graph.getVertex(object.id).text); // delete text from canvas
+                graph.deleteVertex(object.id); // delete vertex
+            } else if (object.get('type') == 'line' || object.get('type') == 'ellipse') {
+                graph.deleteEdge(object.v1Id, object.v2Id); // delete edge
+            }
+        }
+
+        canvas.discardActiveObject(); // removes selection in canvas
+        updateUI();
     }
 
     // changes the color of the selected vertices
@@ -102,81 +162,27 @@ const VERTEX_RADIUS = 15;
         canvas.renderAll();
     }
 
-    // Add a new vertex to graph at mouse position.
-    function addVertex(e) {
-        // If mouse in canvas, nothing selected:
-        if (inCanvas && !canvas.getActiveObject()) {
-            let posX = mousePos.x - VERTEX_RADIUS; // (offset to place center at mouse)
-            let posY = mousePos.y - VERTEX_RADIUS;
-
-            let vertex = graph.addVertex(posX, posY);
-            canvas.add(vertex.circle);
-            canvas.add(vertex.text);
-            canvas.bringToFront(vertex.text);
-
-            vertex.circle.on('moved', function () {
-                updateEdges();
-                updateVertices();
-            });
-            //canvas.on('object:moved', updateEdges);
-
-            graph.printGraph();
-            updateUI();
-        }
-    }
-
-    // Add a new edge to graph.
-    function addEdge(e) {
-        let active = canvas.getActiveObjects();
-        if (active.length == 2) {
-            console.log("adding edge");
-            let v1 = active[0].angle;
-            let v2 = active[1].angle;
-            let edge = graph.addEdge(v1, v2);
-
-            canvas.add(edge.line);
-            canvas.sendToBack(edge.line);
-
-            console.log(active[0]);
-            console.log(active[1]);
-            console.log(edge.line);
-
-            updateUI();
-        }
-    }
-
     // Updates the graphics of all edges.
     function updateEdges() {
-        console.log("updating edges");
         for (var edge of graph.edges) {
-            canvas.remove(edge.line);
-            edge.newLine();
-            canvas.add(edge.line);
-            canvas.sendToBack(edge.line);
+            edge.updatePosition();
+            canvas.renderAll();
         }
     }
 
-    function updateVertices() {
-        for (var vertex of graph.vertices) {
-            canvas.remove(vertex.text);
-            vertex.newText();
-            canvas.add(vertex.text);
-            canvas.bringToFront(vertex.text);
+    // Updates the graphics of all vertex ids.
+    function updateVertexIDs() {
+        for (var vertex of graph.adjList.keys()) {
+            vertex.updateTextPosition();
+            canvas.renderAll();
         }
     }
 
-    // Deletes all selected objects from graph and canvas.
-    function deleteSelected(e) {
-        // (I think this is the hackyest thing I have ever written)
-        for (var object of canvas.getActiveObjects()) {
-            canvas.remove(object);
-            object.radius = 0; // flags vertex for deletion
-        }
-        graph.deleteSelectedVertices(); // deletes flagged vertices (radius=0)
-
-        canvas.discardActiveObject(); // removes selection in canvas
-        graph.printGraph();
-        updateUI();
+    // Calculates the mouse position in the canvas and updates mousePos.
+    function calcMousePos(e) {
+        let pointer = canvas.getPointer(e);
+        mousePos.x = pointer.x;
+        mousePos.y = pointer.y;
     }
 })();
 
@@ -185,9 +191,9 @@ const VERTEX_RADIUS = 15;
 class Graph {
     // Graph constructor.
     constructor() {
-        this.vertices = [];
-        this.edges = [];
         this.adjList = new Map();
+        this.edges = [];
+
         this.idIncrement = 0; // keeps track of next unique vertex id
         this.reclaimedIds = new MinHeap(); // keeps track of ids we can reuse from deleted vertices
     }
@@ -195,9 +201,98 @@ class Graph {
     // Adds a new vertex to the graph.
     addVertex(x, y) {
         let vertex = new Vertex(this.getNewId(), x, y);
-        this.vertices.push(vertex);
         this.adjList.set(vertex, []);
+        this.printGraph();
         return vertex;
+    }
+
+    // Adds an undirected edge from v1 to v2.
+    addEdge(v1, v2) {
+        let vertex1 = this.getVertex(v1);
+        let vertex2 = this.getVertex(v2);
+
+        // offset for parallel edges:
+        let parallelOffset = 0;
+        if (this.adjList.get(vertex1).includes(vertex2)) {
+            console.log("is offsET");
+            vertex1.parallels += 1;
+            vertex2.parallels += 1;
+            if (vertex1.parallels % 2 == 1) {
+                parallelOffset = vertex1.parallels * 4;
+            } else {
+                parallelOffset = -(vertex1.parallels - 1) * 4;
+            }
+        }
+
+        this.adjList.get(vertex1).push(vertex2);
+        this.adjList.get(vertex2).push(vertex1);
+
+        // offset for multiple loops graphics:
+        let loopOffset = 0;
+        if (vertex1 == vertex2) {
+            vertex1.loops += 1;
+            loopOffset = vertex1.loops * 5; // *SCALAR MUST BE ODD*
+        }
+
+        let edge = new Edge(vertex1, vertex2, loopOffset, parallelOffset);
+        this.edges.push(edge);
+        this.printGraph();
+        return edge;
+    }
+
+    // Deletes vertex with id
+    deleteVertex(id) {
+        let vertex = this.getVertex(id);
+
+        // Delete vertex from adjList entries of adjacent vertices
+        let graph = this;
+        let adjacentVertices = this.adjList.get(vertex);
+        adjacentVertices.forEach(function (adjVertex) {
+            let adjVertexAdjList = graph.adjList.get(adjVertex);
+            adjVertexAdjList.forEach(function (adjAdjVert, index, object) {
+                if (adjAdjVert == vertex) {
+                    graph.deleteEdge(vertex.id, adjVertex.id); // delete edge
+                    object.splice(index, 1); // remove from adjList
+                }
+            });
+        });
+
+        this.adjList.delete(vertex); // delete this vertex's adjList entry
+        this.reclaimedIds.push(vertex.id); // RECLAIM THIS ID
+        // TODO: Shift IDs down?? Should I even reclaim IDs?
+        this.printGraph();
+    }
+
+    // Deletes edge
+    deleteEdge(v1Id, v2Id) {
+        let edge = this.getEdge(v1Id, v2Id);
+        console.log(edge);
+
+        // TODO: Delete edge from adjList
+        // TODO: Delete edge from edges
+        // TODOL: Delete edge from canvas??
+
+        this.printGraph();
+    }
+
+    // Returns the vertex with id. If none exists, creates a new vetex.
+    getVertex(id) {
+        for (let vertex of this.adjList.keys()) {
+            if (vertex.id == id) {
+                return vertex;
+            }
+        }
+        return null; // vertex not found
+    }
+
+    // Returns the edge with id.
+    getEdge(v1Id, v2Id) {
+        this.edges.forEach(function (edge) {
+            if (edge.v1Id == v1Id && edge.v2Id == v2Id) {
+                return edge;
+            }
+        });
+        return null; // vertex not found
     }
 
     // returns the next available unique vertex id.
@@ -207,42 +302,6 @@ class Graph {
         } else {
             return this.idIncrement++;
         }
-    }
-
-    // Deletes all vertices with radius=0 from graph.
-    deleteSelectedVertices() {
-        for (let vertex of this.adjList.keys()) {
-            if (vertex.circle.radius == 0) {
-                this.adjList.delete(vertex);
-                this.reclaimedIds.push(vertex.id);
-                console.log("deleted vertex " + vertex.id);
-            }
-        }
-        console.log("");
-    }
-
-    // Adds an undirected edge from v1 to v2.
-    addEdge(v1, v2) {
-        let vertex1 = this.getVertex(v2);
-        let vertex2 = this.getVertex(v1);
-
-        this.adjList.get(vertex1).push(vertex2);
-        this.adjList.get(vertex2).push(vertex1);
-
-        let edge = new Edge(vertex1, vertex2);
-        this.edges.push(edge);
-        return edge;
-    }
-
-    // Returns the vertex with id v. If none exists, creates a new vetex.
-    getVertex(v) {
-        for (let vertex of this.adjList.keys()) {
-            if (vertex.id == v) {
-                return vertex;
-            }
-        }
-
-        return new Vertex(v, -1, -1);
     }
 
     // Prints the graph contents.
@@ -269,47 +328,117 @@ class Vertex {
     // Vertex constructor, requres id and x/y coordinates.
     constructor(id, x, y) {
         this.id = id;
+        this.loops = 0;
+        this.parallels = 0;
+
         this.circle = new fabric.Circle({
+            id: id,
             left: x,
             top: y,
+            originX: 'center',
+            originY: 'center',
             fill: 'MediumAquaMarine',
             stroke: 'slategrey',
             strokeWidth: 0.15,
             radius: VERTEX_RADIUS,
             hasControls: false,
-            angle: this.id
         });
 
-        this.newText();
+        let [textX, textY] = this.calcTextCoords();
+        this.text = new fabric.Text(this.id + "", {
+            id: id,
+            left: textX,
+            top: textY,
+            fill: ID_COLOR,
+            fontFamily: 'Calibri, sans-serif',
+            fontSize: 15,
+            selectable: false,
+            hoverCursor: 'default'
+        });
     }
 
     // Creates a new id text for the vertex.
-    newText() {
+    updateTextPosition() {
+        let [x, y] = this.calcTextCoords();
+
+        this.text.set('left', x);
+        this.text.set('top', y);
+    }
+
+    // Calculates the coordinates of the vertex text.
+    calcTextCoords() {
         let coords = this.circle.calcOCoords();
         let x = ((coords.tl.x + coords.tr.x) / 2) + 12;
-        let y = ((coords.tl.y + coords.bl.y) / 2) - 26;
-
-        this.text = new fabric.Text(this.id + "", {
-            left: x,
-            top: y,
-            fill: '#333333',
-            fontFamily: 'Calibri, sans-serif',
-            fontSize: 15,
-            selectable: false
-        });
+        let y = ((coords.tl.y + coords.bl.y) / 2) + 10;
+        return [x, y];
     }
 }
 
 class Edge {
-    constructor(v1, v2) {
+    // Edge constructor, requires start and edge vertices.
+    constructor(v1, v2, loopOffset, parallelOffset) {
         this.v1 = v1;
         this.v2 = v2;
+        this.isLoop = (v1 == v2);
+        this.loopOffset = loopOffset;
+        this.parallelOffset = parallelOffset;
 
-        this.newLine();
+        let [x1, y1, x2, y2] = this.calcEdgePosition();
+
+        if (this.isLoop) {
+            // Draw loop from one vertex to iteslf for graphics
+            let [x1, y1, x2, y2] = this.calcEdgePosition();
+            this.line = new fabric.Ellipse({
+                v1Id: v1.id,
+                v2Id: v2.id,
+                left: x1,
+                top: y1 + LOOP_Y_OFFSET,
+                originX: 'center',
+                originY: 'center',
+                rx: 20 + this.loopOffset, // horizontal raduis
+                ry: 22 + this.loopOffset, // vertical radius
+                fill: 'rgba(0,0,0,0)',
+                stroke: EDGE_COLOR,
+                strokeWidth: 2,
+                hasControls: false,
+                lockMovement: true,
+                hoverCursor: "pointer"
+            });
+        } else {
+            // Draw straight line from one vertex to another for graphics
+            let [x1, y1, x2, y2] = this.calcStraightPosition();
+            this.line = new fabric.Line([x1, y1, x2, y2], {
+                v1Id: v1.id,
+                v2Id: v2.id,
+                originX: 'center',
+                originY: 'center',
+                stroke: EDGE_COLOR,
+                strokeWidth: 2,
+                hasControls: false,
+                lockMovement: true,
+                hoverCursor: "pointer"
+            });
+        }
     }
 
-    // Creates a new line for the vertex going between its vertices.
-    newLine() {
+    // Updates the position of the edge graphics
+    updatePosition() {
+        if (this.isLoop) {
+            let [x1, y1, x2, y2] = this.calcEdgePosition();
+            this.line.set('left', x1);
+            this.line.set('top', y1 + LOOP_Y_OFFSET);
+        } else {
+            let [x1, y1, x2, y2] = this.calcStraightPosition();
+            this.line.set('x1', x1);
+            this.line.set('y1', y1);
+            this.line.set('x2', x2);
+            this.line.set('y2', y2);
+        }
+        this.line.setCoords();
+    }
+
+    // Calculates the coordinates of the edge based on its adjacent vertices
+    calcEdgePosition() {
         let v1Coords = this.v1.circle.calcOCoords();
         let v2Coords = this.v2.circle.calcOCoords();
 
@@ -318,11 +447,21 @@ class Edge {
         let x2 = (v2Coords.tl.x + v2Coords.tr.x) / 2;
         let y2 = (v2Coords.tl.y + v2Coords.bl.y) / 2;
 
-        console.log("x1:" + x1 + " y1:" + y1 + ", x2:" + x2 + "y2:" + y2 + "\n");
-        this.line = new fabric.Line([x1, y1, x2, y2], {
-            stroke: 'darkgrey',
-            strokeWidth: 2,
-            selectable: false
-        });
+        return [x1, y1, x2, y2];
+    }
+
+    // Calculates the edge position with offsets for parallel edges
+    calcStraightPosition() {
+        let [x1, y1, x2, y2] = this.calcEdgePosition();
+
+        let slope = Math.abs(y2-y1) / (Math.abs(x2-x1) + 0.0001);
+        // TODO: Correct parallel Line Math
+
+        x1 += this.parallelOffset;
+        x2 += this.parallelOffset;
+        y1 += this.parallelOffset;
+        y2 += this.parallelOffset;
+
+        return [x1, y1, x2, y2]
     }
 }
