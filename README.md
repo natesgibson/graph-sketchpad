@@ -22,4 +22,4 @@ Contains 'index.js' which is where I did all of the scripting.
 ## Instructions to Run Locally
 If you want to run the webapp locally, you only need the 'dist' folder. I would not reccomend downloading the entire ~100mb project unless you plan to develop it. For the scripting implementation, see 'index.js' in the 'src' folder.
 
-Open 'index.html' in a modern browser to run. I have not tested this on anything other than an updated Chrome on Windows 10 (December 2020).
+Open 'index.html' in a modern web browser to run. I have not tested this on anything other than an updated Chrome on Windows 10 (December 2020).
