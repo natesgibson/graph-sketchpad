@@ -6,6 +6,8 @@ The project is a webapp developed as my final project for the course MATH/CPT_S 
 
 It is a graph sketchpad, allowing the user to sketch a graph and perform various graph operations.
 
+I made heavy use of the Javascript library Fabric.js (http://fabricjs.com/).
+
 ## Files
 ### dist
 Contains 'intex.html' and 'style.css' which I used to style the webapp.
