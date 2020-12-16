@@ -19,14 +19,23 @@ h1 {
     font-weight: normal;
 }
 
+p, h1 {
+    color: #333333;
+}
+
 #ui {
     align-self: flex-start;
     margin-left: 10px;
+    margin-top: 8px;
 
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     align-content: flex-start;
+}
+
+#ui p {
+    font-size: 12pt;
 }
 
 #canvas1 {

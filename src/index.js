@@ -20,6 +20,7 @@ const VERTEX_RADIUS = 15;
         canvas.setWidth(window.innerWidth * 0.9);
         canvas.setHeight(window.innerHeight * 0.8);
         fabric.Group.prototype.hasControls = false;
+        canvas.preserveObjectStacking = true;
 
         // Tracks mouse position in canvas:
         mousePos = { x: 0, y: 0 };
@@ -28,49 +29,41 @@ const VERTEX_RADIUS = 15;
         // Tracks if mouse in canvas:
         inCanvas = false;
         let upperCanvas = document.getElementsByClassName("upper-canvas")[0];
-        upperCanvas.addEventListener('mouseenter', function () { inCanvas = true; updateUI(); });
-        upperCanvas.addEventListener('mouseleave', function () { inCanvas = false; updateUI(); });
+        upperCanvas.addEventListener('mouseenter', function () { inCanvas = true; });
+        upperCanvas.addEventListener('mouseleave', function () { inCanvas = false; });
 
         // Set up graph:
         graph = new Graph();
+        updateUI();
 
         // Events:
-        document.addEventListener('mousemove', updateUI);
         document.addEventListener('keydown', keyDownSwitch);
-
-
-
-        document.addEventListener('mousemove', updateEdges);
-        canvas.on('selection:created', function () {
-            canvas.getActiveObject().on('moved', function (e) {
-                console.log('moving');
-                e.target.calcCoords();
-                updateEdges();
-            });
-            console.log("selection created");
+        canvas.on('object:moving', function () {
+            updateEdges();
+            updateVertices();
         });
-        //
-        // let coords = canvas.on("object:moving", function(e) {
-        //     var actObj = e.target;
-        //     var coords = actObj.calcCoords();
-        //     // calcCoords returns an object of corner points like this
-        //     //{bl:{x:val, y:val},tl:{x:val, y:val},br:{x:val, y:val},tr:{x:val, y:val}}
-        //     var left = coords.tl.x;
-        //     var top = coords.tl.y;
-        //     return {left:left,top:top};
-        // });
+        canvas.on('object:moving', function () {
+            updateEdges();
+            updateVertices();
+        });
     }
 
-    // Updates UI (currently for debugging).
+    // Updates UI
     function updateUI(e) {
-        if (e != null) {
-            document.getElementById('x').innerText = "x: " + e.clientX;
-            document.getElementById('y').innerText = "y: " + e.clientY;
+        let numVertices = graph.adjList.size;
+        let numEdges = graph.edges.length;
+
+        let vertexText = " vertices";
+        let edgeText = " edges"
+        if (numVertices == 1) {
+            vertexText = " vertex";
+        }
+        if (numEdges == 1) {
+            edgeText = " edge"
         }
 
-        document.getElementById('status').innerText = "In canvas: " + inCanvas;
-        document.getElementById('vertices').innerText = "# vertices: " + graph.adjList.size;
-        document.getElementById('edges').innerText = "# edges: " + graph.edges.length;
+        document.getElementById('vertices').innerText = numVertices + vertexText;
+        document.getElementById('edges').innerText = numEdges + edgeText;
     }
 
     // Calculates the mouse position in the canvas and updates mousePos.
@@ -83,26 +76,29 @@ const VERTEX_RADIUS = 15;
     // Calls functions on key down event based on which key was pressed.
     function keyDownSwitch(e) {
         if (e.keyCode === 86) {
-            addVertex(e);
+            addVertex(e); // v
         } else if (e.keyCode === 69) {
-            addEdge();
+            addEdge(); // e
         } else if (e.keyCode === 46) {
-            deleteSelected();
-        } else if (e.keyCode == 97) {
-            changeColor('red');
-        } else if (e.keyCode == 98) {
-            changeColor('green');
-        } else if (e.keyCode == 99) {
-            changeColor('blue');
+            deleteSelected(); // Delete
+        } else if (e.keyCode == 49 || e.keyCode == 97) {
+            changeColor('MediumAquaMarine'); // 1 or numpad 1
+        } else if (e.keyCode == 50 || e.keyCode == 98) {
+            changeColor('CornflowerBlue'); // 2 or numpad 2
+        } else if (e.keyCode == 51 || e.keyCode == 99) {
+            changeColor('Plum'); // 3 or numpad 3
         }
     }
 
     // changes the color of the selected vertices
     function changeColor(color) {
         let active = canvas.getActiveObjects();
-        for (let i = 0; i <= active.length; i++) {
-            active[i].fill = color;
-        }
+
+        active.forEach(function(object) {
+            if (object.get('type') == "circle") {
+                object.set('fill', color);
+            }
+        });
         canvas.renderAll();
     }
 
@@ -116,6 +112,7 @@ const VERTEX_RADIUS = 15;
             let vertex = graph.addVertex(posX, posY);
             canvas.add(vertex.circle);
             canvas.add(vertex.text);
+            canvas.bringToFront(vertex.text);
 
             vertex.circle.on('moved', function () {
                 updateEdges();
@@ -138,6 +135,8 @@ const VERTEX_RADIUS = 15;
             let edge = graph.addEdge(v1, v2);
 
             canvas.add(edge.line);
+            canvas.sendToBack(edge.line);
+
             console.log(active[0]);
             console.log(active[1]);
             console.log(edge.line);
@@ -153,6 +152,7 @@ const VERTEX_RADIUS = 15;
             canvas.remove(edge.line);
             edge.newLine();
             canvas.add(edge.line);
+            canvas.sendToBack(edge.line);
         }
     }
 
@@ -161,6 +161,7 @@ const VERTEX_RADIUS = 15;
             canvas.remove(vertex.text);
             vertex.newText();
             canvas.add(vertex.text);
+            canvas.bringToFront(vertex.text);
         }
     }
 
@@ -282,15 +283,16 @@ class Vertex {
         this.newText();
     }
 
+    // Creates a new id text for the vertex.
     newText() {
         let coords = this.circle.calcOCoords();
-        let x = (coords.tl.x + coords.tr.x) / 2;
-        let y = ((coords.tl.y + coords.bl.y) / 2) - 20;
+        let x = ((coords.tl.x + coords.tr.x) / 2) + 12;
+        let y = ((coords.tl.y + coords.bl.y) / 2) - 26;
 
         this.text = new fabric.Text(this.id + "", {
             left: x,
             top: y,
-            fill: 'black',
+            fill: '#333333',
             fontFamily: 'Calibri, sans-serif',
             fontSize: 15,
             selectable: false
@@ -306,6 +308,7 @@ class Edge {
         this.newLine();
     }
 
+    // Creates a new line for the vertex going between its vertices.
     newLine() {
         let v1Coords = this.v1.circle.calcOCoords();
         let v2Coords = this.v2.circle.calcOCoords();
