@@ -11,10 +11,10 @@ I made heavy use of the Javascript library Fabric.js (http://fabricjs.com/).
 ## Files
 ### dist
 Contains 'intex.html' and 'style.css' which I used to style the webapp.\
-'main.js' is built by Node.js.
+'main.js' is built by Node.js. It is a combination of 'index.js' and Node.js library code.
 
 ### node_modules
-Node.js stuff.
+Node.js library stuff.
 
 ### src
-Contains 'index.js' which is where I did all of my scripting.
+Contains 'index.js' which is where I did all the scripting.
