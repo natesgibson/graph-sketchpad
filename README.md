@@ -8,7 +8,7 @@ It is a graph sketchpad, allowing the user to sketch a graph and perform various
 
 I made heavy use of the Javascript library Fabric.js (http://fabricjs.com/).
 
-## Files
+## Layout
 ### dist
 Contains 'intex.html' and 'style.css' which I used to style the webapp.\
 'main.js' is built by Node.js. It is a combination of 'index.js' and Node.js library code.
