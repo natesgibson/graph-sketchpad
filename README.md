@@ -17,4 +17,4 @@ Contains 'intex.html' and 'style.css' which I used to style the webapp.\
 Node.js library stuff.
 
 ### src
-Contains 'index.js' which is where I did all the scripting.
+Contains 'index.js' which is where I did all my scripting.
