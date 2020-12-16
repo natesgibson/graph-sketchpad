@@ -1,0 +1,39 @@
+body {
+    margin: 0;
+    font-family: Calibri, sans-serif;
+}
+
+p {
+    margin: 5px;
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    align-content: space-between;
+    background-color: azure;
+}
+
+h1 {
+    font-weight: normal;
+}
+
+#ui {
+    align-self: flex-start;
+    margin-left: 10px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    align-content: flex-start;
+}
+
+#canvas1 {
+    border: 2px solid slategrey;
+    background-color: mintcream;
+}
+
+.canvas-container {
+    margin-bottom: 50px;
+}

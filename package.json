@@ -1,0 +1,20 @@
+{
+  "name": "gtn",
+  "version": "1.0.0",
+  "description": "",
+  "main": "canvas.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "webpack": "^5.8.0",
+    "webpack-cli": "^4.2.0"
+  },
+  "dependencies": {
+    "fabric": "^4.2.0",
+    "mnemonist": "^0.38.0"
+  }
+}
