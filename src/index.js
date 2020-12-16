@@ -140,13 +140,18 @@ const ID_COLOR = '#333333';
             // Graph updates:
             if (object.get('type') == 'circle') {
                 canvas.remove(graph.getVertex(object.id).text); // delete text from canvas
-                graph.deleteVertex(object.id); // delete vertex
+                let deleteEdgesList = graph.deleteVertex(object.id); // delete vertex
+                // Delete appropriate edges from canvas.
+                deleteEdgesList.forEach(function (edge) {
+                    canvas.remove(edge);
+                });
             } else if (object.get('type') == 'line' || object.get('type') == 'ellipse') {
                 graph.deleteEdge(object.v1Id, object.v2Id); // delete edge
             }
         }
 
         canvas.discardActiveObject(); // removes selection in canvas
+        canvas.renderAll();
         updateUI();
     }
 
@@ -240,18 +245,20 @@ class Graph {
         return edge;
     }
 
-    // Deletes vertex with id
+    // Deletes vertex with id. Returns the list of edges to be deleted in the canvas.
     deleteVertex(id) {
         let vertex = this.getVertex(id);
 
         // Delete vertex from adjList entries of adjacent vertices
         let graph = this;
         let adjacentVertices = this.adjList.get(vertex);
+        let deleteEdgesList = [];
         adjacentVertices.forEach(function (adjVertex) {
             let adjVertexAdjList = graph.adjList.get(adjVertex);
             adjVertexAdjList.forEach(function (adjAdjVert, index, object) {
                 if (adjAdjVert == vertex) {
-                    graph.deleteEdge(vertex.id, adjVertex.id); // delete edge
+                    let edge = graph.deleteEdge(vertex.id, adjVertex.id); // delete edge
+                    deleteEdgesList.push(edge);
                     object.splice(index, 1); // remove from adjList
                 }
             });
@@ -261,9 +268,10 @@ class Graph {
         this.reclaimedIds.push(vertex.id); // RECLAIM THIS ID
         // TODO: Shift IDs down?? Should I even reclaim IDs?
         this.printGraph();
+        return deleteEdgesList;
     }
 
-    // Deletes edge
+    // Deletes edge and returns it.
     deleteEdge(v1Id, v2Id) {
         let edge = this.getEdge(v1Id, v2Id);
         console.log(edge);
@@ -273,6 +281,7 @@ class Graph {
         // TODOL: Delete edge from canvas??
 
         this.printGraph();
+        return edge;
     }
 
     // Returns the vertex with id. If none exists, creates a new vetex.
