@@ -8,10 +8,11 @@ It is a graph sketchpad, allowing the user to sketch a graph and perform various
 
 ## Files
 ### dist
-Contains intex.html and style.css which I used to style the webapp. main.js is built by Node.js.
+Contains 'intex.html' and 'style.css' which I used to style the webapp.
+'main.js' is built by Node.js.
 
 ### node_modules
 Node.js stuff.
 
 ### src
-Contains index.js which is where I did all of my scripting.
+Contains 'index.js' which is where I did all of my scripting.
