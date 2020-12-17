@@ -40,8 +40,8 @@ const TEXT_FONT = 'Sans-Serif';
     function init() {
         // Set up Fabric.js canvas:
         canvas = new fabric.Canvas('canvas1');
-        canvas.setWidth(window.innerWidth * 0.8);
-        canvas.setHeight(window.innerHeight * 0.8);
+        canvas.setWidth(window.innerWidth * 0.85);
+        canvas.setHeight(window.innerHeight * 0.65);
         fabric.Group.prototype.hasControls = false;
         canvas.preserveObjectStacking = true;
 
@@ -61,6 +61,8 @@ const TEXT_FONT = 'Sans-Serif';
 
         // Other Events:
         document.addEventListener('keydown', keyDownSwitch);
+        let lapMatBtn = document.getElementById('lapMatBtn');
+        lapMatBtn.addEventListener("click", printLapMatrix);
         canvas.on('object:moving', function() {
             updateEdges();
             updateVertexIDs();
@@ -243,6 +245,27 @@ const TEXT_FONT = 'Sans-Serif';
         mousePos.x = pointer.x;
         mousePos.y = pointer.y;
     }
+
+    // Prints the Laplacian matrix (WolframAlpha comaptable)
+    function printLapMatrix() {
+        let lapMatDisplay = document.getElementById('lapMat');
+        let lapMatText = '{';
+        let lapMatrix = graph.getlapMatrix();
+        for (let i = 0; i < lapMatrix.length; i++) {
+            let row = lapMatrix[i];
+            let rowText = '{';
+            for (let j = 0; j < row.length; j++) {
+                rowText += row[j] + ', ';
+            }
+            rowText = rowText.slice(0, -2);
+            rowText += '},';
+            lapMatText += rowText;
+        }
+
+        if (lapMatrix.length > 0) { lapMatText = lapMatText.slice(0, -1); }
+        lapMatText += '}';
+        lapMatDisplay.innerText = lapMatText;
+    }
 })();
 
 
@@ -339,6 +362,7 @@ class Graph {
             // (don't have to worry about adjList)
         });
 
+        //this.updateIds(vertex.id); // decrement appropriate vertex ids (order matters!)
         this.adjList.delete(vertex); // delete this vertex's adjList entry
         // TODO: Update Ids?
         return deleteEdgesList;
@@ -421,6 +445,19 @@ class Graph {
             }
         }
         this.printGraph();
+    }
+
+    // Decriments the ids of all vertices id > id by 1 when a vertex of id is deleted.
+    updateIds(id) {
+        // TODO: implement
+        for (let i = id + 1; i < this.adjList.size; i++) {
+            let vertex = this.getVertex(i);
+            if (vertex != null) {
+                vertex.id--;
+                vertex.updateIdText();
+            }
+        }
+        this.idIncrement--;
     }
 
     // Returns the number of components in the graph.
@@ -509,6 +546,24 @@ class Graph {
         array.splice(array.indexOf(value), 1);
     }
 
+    // Returns the laplacian matrix of the graph
+    getlapMatrix() {
+        let matrix = [];
+        for (let vertex of this.adjList.keys()) {
+            let row = new Array;
+            for (let i = 0; i < this.adjList.size; i++) { row[i] = 0; }
+            let adjacents = this.adjList.get(vertex);
+            adjacents.forEach(function(adj) {
+                row[adj.id]++;
+            });
+            matrix.push(row);
+            let degree = -vertex.degree;
+            if (degree == -0) { degree = 0; }
+            row[vertex.id] = degree;
+        }
+        return matrix;
+    }
+
     // Prints the graph contents.
     printGraph() {
         console.log("adjacency list:");
@@ -595,6 +650,11 @@ class Vertex {
     // Update value of deg text
     updateDegText() {
         this.degText.set('text', 'deg ' + this.degree);
+    }
+
+    // Update the value of id text
+    updateIdText() {
+        this.idText.set('text', this.id + '');
     }
 }
 

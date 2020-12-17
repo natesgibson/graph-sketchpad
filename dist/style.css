@@ -19,7 +19,7 @@ h1 {
     font-weight: normal;
 }
 
-p, h1 {
+p, h1, button {
     color: #333333;
 }
 
@@ -45,4 +45,36 @@ p, h1 {
 
 .canvas-container {
     margin-bottom: 50px;
+}
+
+.info {
+    display: flex;
+    align-self: flex-start;
+    align-items: flex-start;
+    justify-content: center;
+    flex-direction: row;
+    margin-left: 7.5%;
+    margin-right: 7.5%;
+    margin-bottom: 10%;
+}
+
+button {
+    background-color: azure;
+    border: 2px solid black;
+    border-radius: 5px;
+    padding: .3em;
+    color: black;
+    text-align: center;
+    font-weight: bold;
+    cursor: pointer;
+    margin-right: 15px;
+}
+
+button:hover {
+    background-color: #333333;
+    color: azure;
+}
+
+button:active {
+    transform: translateY(2px);
 }
