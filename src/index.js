@@ -8,6 +8,9 @@ const LOOP_Y_OFFSET = -33; // y-offset for loops
 const VERTEX_COLOR_1 = 'MediumAquaMarine';
 const VERTEX_COLOR_2 = 'CornflowerBlue';
 const VERTEX_COLOR_3 = 'Plum';
+const VERTEX_COLOR_4 = 'LightSalmon';
+const VERTEX_COLOR_5 = 'DimGrey';
+const VERTEX_COLOR_6 = 'Khaki';
 
 const EDGE_COLOR = 'darkgrey';
 const ID_COLOR = '#333333';
@@ -88,6 +91,12 @@ const ID_COLOR = '#333333';
             changeColor(VERTEX_COLOR_2); // 2 or numpad 2
         } else if (e.keyCode == 51 || e.keyCode == 99) {
             changeColor(VERTEX_COLOR_3); // 3 or numpad 3
+        } else if (e.keyCode == 52 || e.keyCode == 100) {
+            changeColor(VERTEX_COLOR_4); // 4 or numpad 4
+        } else if (e.keyCode == 53 || e.keyCode == 101) {
+            changeColor(VERTEX_COLOR_5); // 5 or numpad 5
+        } else if (e.keyCode == 54 || e.keyCode == 102) {
+            changeColor(VERTEX_COLOR_6); // 6 or numpad 6
         }
     }
 
