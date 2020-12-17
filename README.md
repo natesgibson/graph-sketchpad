@@ -2,7 +2,7 @@
 
 ## Summary
 
-This project is a webapp developed as my final project for the course MATH/CPT_S 453 Graph Theory at WSU for Fall 2020.
+This project is a web application developed as my final project for the course MATH/CPT_S 453 Graph Theory at WSU for Fall 2020.
 
 It is a graph sketchpad, allowing the user to sketch a graph and perform various graph operations.
 
@@ -12,7 +12,7 @@ A live version is hosted at: http://natesgibson.com/graph/.
 
 ## Repository Layout
 ### dist
-Contains 'intex.html' and 'style.css' which I used to style the webapp.\
+Contains 'intex.html' and 'style.css' which I used to style the web app.\
 'main.js' is built by Node.js. It is a combination of 'index.js' and Node.js library code.
 
 ### documents
@@ -27,6 +27,6 @@ Node.js library stuff.
 Contains 'index.js' which is where I did all of the scripting.
 
 ## Instructions to Run Locally
-If you want to run the webapp locally, you only need the 'dist' folder. I would not recommend downloading the entire ~100mb project unless you plan to develop it. For the scripting implementation, see 'index.js' in the 'src' folder.
+If you want to run the web app locally, you only need the 'dist' folder. I would not recommend downloading the entire ~100mb project unless you plan to develop it. For the scripting implementation, see 'index.js' in the 'src' folder.
 
 Open 'index.html' in a modern web browser to run. I have not tested this on anything other than an updated Chrome on Windows 10 (December 2020).
