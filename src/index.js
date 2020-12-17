@@ -102,8 +102,8 @@ const ID_COLOR = '#333333';
 
             let vertex = graph.addVertex(posX, posY);
             canvas.add(vertex.circle);
-            canvas.add(vertex.text);
-            canvas.bringToFront(vertex.text);
+            canvas.add(vertex.idText);
+            canvas.bringToFront(vertex.idText);
 
             canvas.renderAll();
             updateUI();
@@ -126,7 +126,7 @@ const ID_COLOR = '#333333';
             let edge = graph.addEdge(v1, v2);
 
             canvas.add(edge.line);
-            canvas.bringToFront(edge.line);
+            canvas.sendToBack(edge.line);
             canvas.renderAll();
             updateUI();
         }
@@ -134,25 +134,38 @@ const ID_COLOR = '#333333';
 
     // Deletes all selected objects from graph and canvas.
     function deleteSelected(e) {
-        for (var object of canvas.getActiveObjects()) {
-            canvas.remove(object);
-
-            // Graph updates:
-            if (object.get('type') == 'circle') {
-                canvas.remove(graph.getVertex(object.id).text); // delete text from canvas
-                let deleteEdgesList = graph.deleteVertex(object.id); // delete vertex
-                // Delete appropriate edges from canvas.
-                deleteEdgesList.forEach(function (edge) {
-                    canvas.remove(edge);
-                });
-            } else if (object.get('type') == 'line' || object.get('type') == 'ellipse') {
-                graph.deleteEdge(object.v1Id, object.v2Id); // delete edge
+        // First delete edges:
+        let active = canvas.getActiveObjects();
+        console.log('active1');
+        console.log(active);
+        for (var object of active) {
+            if (object.get('type') == 'line' || object.get('type') == 'ellipse') {
+                graph.deleteEdge(object.id); // delete edge
+                canvas.remove(object); // remove from canvas
             }
         }
 
-        canvas.discardActiveObject(); // removes selection in canvas
+        // Second delete vertices:
+        active = canvas.getActiveObjects();
+        console.log('active2');
+        console.log(active);
+        for (var object of active) {
+            if (object.get('type') == 'circle') {
+                console.log("removing");
+                console.log(object);
+                canvas.remove(graph.getVertex(object.id).idText); // delete text from canvas
+                let deleteEdgesList = graph.deleteVertex(object.id); // delete vertex
+                deleteEdgesList.forEach(function (edge) {
+                    canvas.remove(edge.line); // Delete appropriate edges from canvas
+                });
+                canvas.remove(object); // remove from canvas
+            }
+        }
+
+        canvas.discardActiveObject(); // remove all selected in canvas
         canvas.renderAll();
         updateUI();
+        graph.printGraph();
     }
 
     // changes the color of the selected vertices
@@ -201,6 +214,7 @@ class Graph {
 
         this.idIncrement = 0; // keeps track of next unique vertex id
         this.reclaimedIds = new MinHeap(); // keeps track of ids we can reuse from deleted vertices
+        this.edgeIdIncrement = 0; // keeps track of next unique edge id
     }
 
     // Adds a new vertex to the graph.
@@ -219,7 +233,6 @@ class Graph {
         // offset for parallel edges:
         let parallelOffset = 0;
         if (this.adjList.get(vertex1).includes(vertex2)) {
-            console.log("is offsET");
             vertex1.parallels += 1;
             vertex2.parallels += 1;
             if (vertex1.parallels % 2 == 1) {
@@ -239,7 +252,17 @@ class Graph {
             loopOffset = vertex1.loops * 5; // *SCALAR MUST BE ODD*
         }
 
-        let edge = new Edge(vertex1, vertex2, loopOffset, parallelOffset);
+        // get id for edge and add to edgeid lists
+        let id = this.edgeIdIncrement;
+        this.edgeIdIncrement += 1;
+        vertex1.edgeIds.push(id);
+        if (vertex1 != vertex2) {
+            vertex2.edgeIds.push(id); // not loop, second vertex needs id
+        }
+        console.log(vertex1.edgeIds);
+        console.log(vertex2.edgeIds);
+
+        let edge = new Edge(id, vertex1, vertex2, loopOffset, parallelOffset);
         this.edges.push(edge);
         this.printGraph();
         return edge;
@@ -252,35 +275,48 @@ class Graph {
         // Delete vertex from adjList entries of adjacent vertices
         let graph = this;
         let adjacentVertices = this.adjList.get(vertex);
-        let deleteEdgesList = [];
         adjacentVertices.forEach(function (adjVertex) {
             let adjVertexAdjList = graph.adjList.get(adjVertex);
             adjVertexAdjList.forEach(function (adjAdjVert, index, object) {
                 if (adjAdjVert == vertex) {
-                    let edge = graph.deleteEdge(vertex.id, adjVertex.id); // delete edge
-                    deleteEdgesList.push(edge);
                     object.splice(index, 1); // remove from adjList
                 }
             });
         });
 
+        // Delete all adjacent edges
+        let deleteEdgesList = [];
+        console.log(vertex.edgeIds);
+        vertex.edgeIds.forEach(function (edgeId) {
+            console.log(edgeId);
+            let edge = graph.getEdge(edgeId);
+            graph.removeByValue(graph.edges, edge); // remove from graph edges
+            deleteEdgesList.push(edge); // to delete graphics
+            // (don't have to worry about adjList)
+        });
+
         this.adjList.delete(vertex); // delete this vertex's adjList entry
         this.reclaimedIds.push(vertex.id); // RECLAIM THIS ID
         // TODO: Shift IDs down?? Should I even reclaim IDs?
-        this.printGraph();
         return deleteEdgesList;
     }
 
     // Deletes edge and returns it.
-    deleteEdge(v1Id, v2Id) {
-        let edge = this.getEdge(v1Id, v2Id);
+    deleteEdge(id) {
+        let edge = this.getEdge(id);
+        console.log("deleting:");
         console.log(edge);
 
-        // TODO: Delete edge from adjList
-        // TODO: Delete edge from edges
-        // TODOL: Delete edge from canvas??
+        this.removeByValue(edge.v1.edgeIds, edge.id); // remove from v1 id list
+        if (!edge.isLoop) {
+            this.removeByValue(edge.v2.edgeIds, edge.id); // remove from v2 id list
+        }
+        this.removeByValue(this.edges, edge); // remove from graph edges
 
-        this.printGraph();
+        // TODO: Delete edge from adjList
+        this.removeByValue(this.adjList.get(edge.v1), edge.v2);
+        this.removeByValue(this.adjList.get(edge.v2), edge.v1);
+
         return edge;
     }
 
@@ -295,13 +331,14 @@ class Graph {
     }
 
     // Returns the edge with id.
-    getEdge(v1Id, v2Id) {
-        this.edges.forEach(function (edge) {
-            if (edge.v1Id == v1Id && edge.v2Id == v2Id) {
-                return edge;
+    getEdge(id) {
+        let edge = null;
+        this.edges.forEach(function (e) {
+            if (e.id == id) {
+                edge = e;
             }
         });
-        return null; // vertex not found
+        return edge;
     }
 
     // returns the next available unique vertex id.
@@ -311,6 +348,11 @@ class Graph {
         } else {
             return this.idIncrement++;
         }
+    }
+
+    // removes the first instance of value from array
+    removeByValue(array, value) {
+        array.splice(array.indexOf(value), 1);
     }
 
     // Prints the graph contents.
@@ -339,6 +381,7 @@ class Vertex {
         this.id = id;
         this.loops = 0;
         this.parallels = 0;
+        this.edgeIds = []; // ids of adjacent edges
 
         this.circle = new fabric.Circle({
             id: id,
@@ -354,8 +397,7 @@ class Vertex {
         });
 
         let [textX, textY] = this.calcTextCoords();
-        this.text = new fabric.Text(this.id + "", {
-            id: id,
+        this.idText = new fabric.Text(this.id + "", {
             left: textX,
             top: textY,
             fill: ID_COLOR,
@@ -370,8 +412,8 @@ class Vertex {
     updateTextPosition() {
         let [x, y] = this.calcTextCoords();
 
-        this.text.set('left', x);
-        this.text.set('top', y);
+        this.idText.set('left', x);
+        this.idText.set('top', y);
     }
 
     // Calculates the coordinates of the vertex text.
@@ -385,7 +427,8 @@ class Vertex {
 
 class Edge {
     // Edge constructor, requires start and edge vertices.
-    constructor(v1, v2, loopOffset, parallelOffset) {
+    constructor(id, v1, v2, loopOffset, parallelOffset) {
+        this.id = id
         this.v1 = v1;
         this.v2 = v2;
         this.isLoop = (v1 == v2);
@@ -398,8 +441,7 @@ class Edge {
             // Draw loop from one vertex to iteslf for graphics
             let [x1, y1, x2, y2] = this.calcEdgePosition();
             this.line = new fabric.Ellipse({
-                v1Id: v1.id,
-                v2Id: v2.id,
+                id: id,
                 left: x1,
                 top: y1 + LOOP_Y_OFFSET,
                 originX: 'center',
@@ -417,8 +459,7 @@ class Edge {
             // Draw straight line from one vertex to another for graphics
             let [x1, y1, x2, y2] = this.calcStraightPosition();
             this.line = new fabric.Line([x1, y1, x2, y2], {
-                v1Id: v1.id,
-                v2Id: v2.id,
+                id: id,
                 originX: 'center',
                 originY: 'center',
                 stroke: EDGE_COLOR,
@@ -466,8 +507,8 @@ class Edge {
         let slope = Math.abs(y2-y1) / (Math.abs(x2-x1) + 0.0001);
         // TODO: Correct parallel Line Math
 
-        x1 += this.parallelOffset;
-        x2 += this.parallelOffset;
+        x1 += this.parallelOffset * 2;
+        x2 += this.parallelOffset * 2;
         y1 += this.parallelOffset;
         y2 += this.parallelOffset;
 
