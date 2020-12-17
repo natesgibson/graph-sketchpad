@@ -145,12 +145,10 @@ const TEXT_FONT = 'Sans-Serif';
 
             let edge = graph.addEdge(v1, v2);
 
-            if (edge.isDirected) {
-                canvas.add(edge.arrow);
-                canvas.sendToBack(edge.arrow);
-            }
             canvas.add(edge.line);
             canvas.sendToBack(edge.line);
+            canvas.add(edge.arrow);
+            canvas.bringToFront(edge.arrow);
 
             canvas.renderAll();
             updateUI();
@@ -197,7 +195,6 @@ const TEXT_FONT = 'Sans-Serif';
         let active = canvas.getActiveObjects();
         // Note, only checks for line, cannot effect loops
         if (active.length == 1 && active[0].get('type') == 'line') {
-            console.log("toggle");
             graph.toggleDirection(active[0].id);
         }
         canvas.renderAll();
@@ -327,7 +324,7 @@ class Graph {
         let deleteEdgesList = [];
         vertex.edgeIds.forEach(function (edgeId) {
             let edge = graph.getEdge(edgeId);
-            graph.updateVertexPropertiesOnEdgeDelete(edge);
+            graph.updateVertexPropertiesOnEdgeDelete(edge); // update adjacent vertex properties
             graph.removeByValue(graph.edges, edge); // remove from graph edges
             deleteEdgesList.push(edge); // to delete graphics
             // (don't have to worry about adjList)
@@ -352,13 +349,13 @@ class Graph {
             this.removeByValue(this.adjList.get(edge.v1), edge.v2);
             this.removeByValue(this.adjList.get(edge.v2), edge.v1);
 
-            this.updateVertexPropertiesOnEdgeDelete(edge);
+            this.updateVertexPropertiesOnEdgeDelete(edge); // update adjacent vertex properties
         }
 
         return edge;
     }
 
-    // // Upates loop, parallel, deg of adjacent vertices on edge delete.
+    // Upates loop, parallel, deg of adjacent vertices on edge delete.
     updateVertexPropertiesOnEdgeDelete(edge) {
         if (edge.isLoop) {
             edge.v1.degree -= 2;
@@ -401,8 +398,20 @@ class Graph {
     toggleDirection(id) {
         let edge = this.getEdge(id);
         if (edge != null) {
-            edge.toggleDirection();
+            let dirChange = edge.toggleDirection();
+            if (dirChange == 1) {
+                // update adjList for v1 to v2 from undirected:
+                this.removeByValue(this.adjList.get(edge.v1), edge.v2);
+            } else if (dirChange == 2) {
+                // update adjList for v2 to v1 from v1 to v2:
+                this.removeByValue(this.adjList.get(edge.v1), edge.v2);
+                this.adjList.get(edge.v2).push(edge.v1);
+            } else if (dirChange == 3) {
+                // update adjList for undirected from v2 to v1:
+                this.adjList.get(edge.v2).push(edge.v1);
+            }
         }
+        this.printGraph();
     }
 
     // removes the first instance of value from array
@@ -560,7 +569,7 @@ class Edge {
             fill: EDGE_COLOR,
             selectable: false,
             hoverCursor: 'default',
-            visibility: this.isDirected
+            visible: this.isDirected
         });
     }
 
@@ -577,6 +586,7 @@ class Edge {
             this.line.set('x2', x2);
             this.line.set('y2', y2);
         }
+        // TODO: Correct Arrow position/angel
         this.arrow.set('left', x1 + 21);
         this.arrow.set('top', y1);
 
@@ -586,12 +596,8 @@ class Edge {
 
     // Updates arrow graphics.
     updateArrow() {
-        this.arrow.set('visibile', this.isDirected);
+        this.arrow.set('visible', this.isDirected);
         this.updatePosition();
-
-        console.log(this.isDirected);
-        console.log(this.toggleMode);
-        console.log(this.arrow.get('visibility'));
     }
 
     // Calculates the coordinates of the edge based on its adjacent vertices
@@ -626,18 +632,18 @@ class Edge {
     toggleDirection() {
         let result = -1;
         if (!this.isDirected) {
-            // toggle: v1 to v2
+            // toggle to: v1 to v2
             this.isDirected = true;
             this.toggleMode = true;
             result = 1;
         } else if (this.isDirected && this.toggleMode) {
-            // toggle: v2 to v1
+            // toggle to: v2 to v1
             this.flipVertices();
             this.isDirected = true;
             this.toggleMode = false;
             result = 2;
         } else if (this.isDirected && !this.toggleMode) {
-            // toggle: undirected
+            // toggle to: undirected
             this.flipVertices();
             this.isDirected = false;
             this.toggleMode = false;
