@@ -1,18 +1,17 @@
 /*
 TODO:
 - Fix group movement postion stuff
-- Fix parallel edge position calc
 - Different selection (color red?)
 - Help ui (?) for controls and such
 - Directed edges
 - Host on website
+- UI info toggles
 - More Features!
 */
 
 
 "use strict"
 import {fabric} from 'fabric';
-var MinHeap = require('mnemonist/heap').MinHeap;
 
 const VERTEX_RADIUS = 15; // vertex fontSize
 const LOOP_Y_OFFSET = -33; // y-offset for loops
@@ -26,6 +25,7 @@ const VERTEX_COLOR_6 = 'LightSalmon';
 
 const EDGE_COLOR = 'darkgrey';
 const ID_COLOR = '#333333';
+const TEXT_FONT = 'Sans-Serif';
 
 
 (function() {
@@ -323,31 +323,32 @@ class Graph {
     // Deletes edge and returns it.
     deleteEdge(id) {
         let edge = this.getEdge(id);
-
-        this.removeByValue(edge.v1.edgeIds, edge.id); // remove from v1 id list
-        if (!edge.isLoop) {
-            this.removeByValue(edge.v2.edgeIds, edge.id); // remove from v2 id list
-        }
-        this.removeByValue(this.edges, edge); // remove from graph edges
-
-        // Delete edges from adjacency list
-        this.removeByValue(this.adjList.get(edge.v1), edge.v2);
-        this.removeByValue(this.adjList.get(edge.v2), edge.v1);
-
-        // Upate loop, parallel, deg
-        if (edge.isLoop) {
-            edge.v1.degree -= 2;
-            edge.v1.updateDegText();
-        } else {
-            if (edge.isParallel) {
-            edge.v1.parallels--;
-            edge.v2.parallels--;
+        if (edge != null) {
+            this.removeByValue(edge.v1.edgeIds, edge.id); // remove from v1 id list
+            if (!edge.isLoop) {
+                this.removeByValue(edge.v2.edgeIds, edge.id); // remove from v2 id list
             }
+            this.removeByValue(this.edges, edge); // remove from graph edges
 
-            edge.v1.degree--;
-            edge.v2.degree--;
-            edge.v1.updateDegText();
-            edge.v2.updateDegText();
+            // Delete edges from adjacency list
+            this.removeByValue(this.adjList.get(edge.v1), edge.v2);
+            this.removeByValue(this.adjList.get(edge.v2), edge.v1);
+
+            // Upate loop, parallel, deg
+            if (edge.isLoop) {
+                edge.v1.degree -= 2;
+                edge.v1.updateDegText();
+            } else {
+                if (edge.isParallel) {
+                edge.v1.parallels--;
+                edge.v2.parallels--;
+                }
+
+                edge.v1.degree--;
+                edge.v2.degree--;
+                edge.v1.updateDegText();
+                edge.v2.updateDegText();
+            }
         }
 
         return edge;
@@ -424,22 +425,22 @@ class Vertex {
         let [textX, textY] = this.calcTextPosition();
         this.idText = new fabric.Text(this.id + "", {
             left: textX - 18,
-            top: textY + 16,
+            top: textY + 20,
             originX: 'center',
             originY: 'center',
             fill: ID_COLOR,
-            fontFamily: 'Calibri, sans-serif',
+            fontFamily: TEXT_FONT,
             fontSize: 15,
             selectable: false,
             hoverCursor: 'default'
         });
         this.degText = new fabric.Text('deg ' + this.degree, {
             left: textX + 28,
-            top: textY + 16,
+            top: textY + 18,
             originX: 'center',
             originY: 'center',
             fill: ID_COLOR,
-            fontFamily: 'Calibri, sans-serif',
+            fontFamily: TEXT_FONT,
             fontSize: 15,
             selectable: false,
             hoverCursor: 'default'
@@ -451,10 +452,10 @@ class Vertex {
         let [x, y] = this.calcTextPosition();
 
         this.idText.set('left', x - 18);
-        this.idText.set('top', y + 16);
+        this.idText.set('top', y + 18);
 
         this.degText.set('left', x + 28);
-        this.degText.set('top', y + 16);
+        this.degText.set('top', y + 18);
     }
 
     // Calculates the coordinates of the vertex's text.
