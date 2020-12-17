@@ -1,3 +1,15 @@
+/*
+TODO:
+- Fix group movement postion stuff
+- Fix parallel edge position calc
+- Different selection (color red?)
+- Help ui (?) for controls and such
+- Directed edges
+- Host on website
+- More Features!
+*/
+
+
 "use strict"
 import {fabric} from 'fabric';
 var MinHeap = require('mnemonist/heap').MinHeap;
