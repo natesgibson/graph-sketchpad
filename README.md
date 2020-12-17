@@ -13,6 +13,10 @@ I made heavy use of the Javascript library Fabric.js (http://fabricjs.com/).
 Contains 'intex.html' and 'style.css' which I used to style the webapp.\
 'main.js' is built by Node.js. It is a combination of 'index.js' and Node.js library code.
 
+### documents
+Contains 'Project Writeup' in .pdf and .docx formats, which outlines the features and implementation of the
+project as a narrative. Part of the final project requirements.
+
 ### node_modules
 Node.js library stuff.
 
@@ -20,6 +24,6 @@ Node.js library stuff.
 Contains 'index.js' which is where I did all of the scripting.
 
 ## Instructions to Run Locally
-If you want to run the webapp locally, you only need the 'dist' folder. I would not reccomend downloading the entire ~100mb project unless you plan to develop it. For the scripting implementation, see 'index.js' in the 'src' folder.
+If you want to run the webapp locally, you only need the 'dist' folder. I would not recommend downloading the entire ~100mb project unless you plan to develop it. For the scripting implementation, see 'index.js' in the 'src' folder.
 
 Open 'index.html' in a modern web browser to run. I have not tested this on anything other than an updated Chrome on Windows 10 (December 2020).
