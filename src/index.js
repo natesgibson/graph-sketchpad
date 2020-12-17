@@ -71,18 +71,27 @@ const TEXT_FONT = 'Sans-Serif';
     function updateUI(e) {
         let numVertices = graph.adjList.size;
         let numEdges = graph.edges.length;
+        let numComponents = graph.getNumComponents();
+        let isBipartite = graph.getIsBipartite();
 
-        let vertexText = " vertices";
-        let edgeText = " edges"
+        let vertexText = ' vertices';
+        let edgeText = ' edges';
+        let componentsText = ' components';
+        let bipartiteText = 'is bipartite: ';
         if (numVertices == 1) {
-            vertexText = " vertex";
+            vertexText = ' vertex';
         }
         if (numEdges == 1) {
-            edgeText = " edge"
+            edgeText = ' edge';
+        }
+        if (numComponents == 1) {
+            componentsText = ' component'
         }
 
         document.getElementById('vertices').innerText = numVertices + vertexText;
         document.getElementById('edges').innerText = numEdges + edgeText;
+        document.getElementById('components').innerText = numComponents + componentsText;
+        document.getElementById('bipartite').innerText = bipartiteText + isBipartite;
     }
 
     // Calls functions on key down event based on which key was pressed.
@@ -186,8 +195,8 @@ const TEXT_FONT = 'Sans-Serif';
 
         canvas.discardActiveObject(); // remove all selected in canvas
         canvas.renderAll();
-        updateUI();
         graph.printGraph();
+        updateUI();
     }
 
     // toggles the direction of the selected edge: v1 to v2, v2 to v1, undirected
@@ -414,6 +423,87 @@ class Graph {
         this.printGraph();
     }
 
+    // Returns the number of components in the graph.
+    getNumComponents() {
+        return this.getComponents().length;
+    }
+
+    // Builds and returns the graph's components.
+    getComponents() {
+        let components = [];
+        let found = [];
+        let graph = this;
+        for (let vertex of this.adjList.keys()) {
+            if(found.indexOf(vertex) == -1) {
+                let component = [];
+                component = graph.buildComponent(vertex, component);
+                found = found.concat(component);
+                components.push(component);
+            }
+        }
+        return components;
+    }
+
+    // Recursively builds and returns a component.
+    buildComponent(vertex, component) {
+        component.push(vertex);
+        let adjacents = this.adjList.get(vertex);
+        let graph = this;
+        adjacents.forEach(function (adj) {
+            if (component.indexOf(adj) == -1) {
+                component = graph.buildComponent(adj, component);
+            }
+        });
+        return component;
+    }
+
+    // Returns whether the graph is bipartite.
+    getIsBipartite() {
+        if (this.adjList.size == 0) {
+            return true; // trivially bipartite
+        }
+
+        if (this.getNumComponents() == 1) {
+            let [set1, set2] = this.buildBipartiteSets();
+            let intersection = this.getIntersection(set1, set2);
+            let allAcountedFor = ((set1.size + set2.size) == this.adjList.size);
+            let areDisjoint = (intersection.size == 0);
+            return allAcountedFor && areDisjoint;
+        }
+
+        return false;
+    }
+
+    // Builds two sets for bipartite check.
+    buildBipartiteSets() {
+        let set1 = new Set();
+        let set2 = new Set();
+        set1.add(this.adjList.keys().next().value);
+        for (let vertex of this.adjList.keys()) {
+            let adjacents = this.adjList.get(vertex);
+            adjacents.forEach(function (adj) {
+                if (set1.has(vertex)) {
+                    set2.add(adj);
+                }
+                if (set2.has(vertex)) {
+                    set1.add(adj);
+                }
+            });
+        }
+        return [set1, set2];
+    }
+
+    // return the intersection of two sets
+    getIntersection(set1, set2) {
+        let intersection = new Set();
+        for (let element of set1) {
+            if (set2.has(element)) {
+                intersection.add(element);
+            }
+        }
+        return intersection;
+    }
+
     // removes the first instance of value from array
     removeByValue(array, value) {
         array.splice(array.indexOf(value), 1);
@@ -421,11 +511,8 @@ class Graph {
 
     // Prints the graph contents.
     printGraph() {
-        // Print # vertices and edges:
-        console.log("Graph has " + this.adjList.size + " vertices");
-        console.log("Graph has " + this.edges.length + " edges");
-
-        // Print adjacency matrix contents:
+        console.log("adjacency list:");
+        // For each vertex:
         for (let vertex of this.adjList.keys()) {
             let adjVertices = this.adjList.get(vertex);
             let adjVerts = "";
@@ -650,14 +737,12 @@ class Edge {
             result = 3;
         }
 
-        console.log(result);
         this.updateArrow();
         return result;
     }
 
     // Swaps v1 and v2.
     flipVertices() {
-        console.log("flipping vertices");
         let vOne = this.v1;
         this.v1 = this.v2;
         this.v2 = vOne;
