@@ -159,7 +159,9 @@ const ID_COLOR = '#333333';
                 canvas.remove(graph.getVertex(object.id).idText); // delete text from canvas
                 let deleteEdgesList = graph.deleteVertex(object.id); // delete vertex
                 deleteEdgesList.forEach(function (edge) {
-                    canvas.remove(edge.line); // Delete appropriate edges from canvas
+                    if (edge != null) {
+                        canvas.remove(edge.line); // Delete appropriate edges from canvas
+                    }
                 });
                 canvas.remove(object); // remove from canvas
             }
@@ -216,13 +218,12 @@ class Graph {
         this.edges = [];
 
         this.idIncrement = 0; // keeps track of next unique vertex id
-        this.reclaimedIds = new MinHeap(); // keeps track of ids we can reuse from deleted vertices
         this.edgeIdIncrement = 0; // keeps track of next unique edge id
     }
 
     // Adds a new vertex to the graph.
     addVertex(x, y) {
-        let vertex = new Vertex(this.getNewId(), x, y);
+        let vertex = new Vertex(this.idIncrement++, x, y);
         this.adjList.set(vertex, []);
         this.printGraph();
         return vertex;
@@ -256,8 +257,7 @@ class Graph {
         }
 
         // get id for edge and add to edgeid lists
-        let id = this.edgeIdIncrement;
-        this.edgeIdIncrement += 1;
+        let id = this.edgeIdIncrement++;
         vertex1.edgeIds.push(id);
         if (vertex1 != vertex2) {
             vertex2.edgeIds.push(id); // not loop, second vertex needs id
@@ -295,8 +295,7 @@ class Graph {
         });
 
         this.adjList.delete(vertex); // delete this vertex's adjList entry
-        this.reclaimedIds.push(vertex.id); // RECLAIM THIS ID
-        // TODO: Shift IDs down?? Should I even reclaim IDs?
+        // TODO: Update Ids?
         return deleteEdgesList;
     }
 
@@ -336,15 +335,6 @@ class Graph {
             }
         });
         return edge;
-    }
-
-    // returns the next available unique vertex id.
-    getNewId() {
-        if (this.reclaimedIds.size) {
-            return this.reclaimedIds.pop();
-        } else {
-            return this.idIncrement++;
-        }
     }
 
     // removes the first instance of value from array
