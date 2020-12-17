@@ -91,8 +91,10 @@ const TEXT_FONT = 'Sans-Serif';
             addVertex(e); // v
         } else if (e.keyCode === 69) {
             addEdge(); // e
-        } else if (e.keyCode === 46 || e.keyCode === 8 || e.keyCode === 68) {
-            deleteSelected(); // Delete or backspace or d
+        } else if (e.keyCode === 46 || e.keyCode === 8) {
+            deleteSelected(); // Delete or backspace
+        } else if (e.keyCode === 68) {
+            toggleDirection();
         } else if (e.keyCode == 49 || e.keyCode == 97) {
             changeColor(VERTEX_COLOR_1); // 1 or numpad 1
         } else if (e.keyCode == 50 || e.keyCode == 98) {
@@ -107,8 +109,6 @@ const TEXT_FONT = 'Sans-Serif';
             changeColor(VERTEX_COLOR_6); // 6 or numpad 6
         }
     }
-
-
 
     // Add a new vertex to graph at mouse position.
     function addVertex(e) {
@@ -145,8 +145,13 @@ const TEXT_FONT = 'Sans-Serif';
 
             let edge = graph.addEdge(v1, v2);
 
+            if (edge.isDirected) {
+                canvas.add(edge.arrow);
+                canvas.sendToBack(edge.arrow);
+            }
             canvas.add(edge.line);
             canvas.sendToBack(edge.line);
+
             canvas.renderAll();
             updateUI();
         }
@@ -158,8 +163,9 @@ const TEXT_FONT = 'Sans-Serif';
         let active = canvas.getActiveObjects();
         for (var object of active) {
             if (object.get('type') == 'line' || object.get('type') == 'ellipse') {
+                canvas.remove(graph.getEdge(object.id).arrow); // remove arrow from canvas
                 graph.deleteEdge(object.id); // delete edge
-                canvas.remove(object); // remove from canvas
+                canvas.remove(object); // remove line from canvas
             }
         }
 
@@ -184,6 +190,17 @@ const TEXT_FONT = 'Sans-Serif';
         canvas.renderAll();
         updateUI();
         graph.printGraph();
+    }
+
+    // toggles the direction of the selected edge: v1 to v2, v2 to v1, undirected
+    function toggleDirection() {
+        let active = canvas.getActiveObjects();
+        // Note, only checks for line, cannot effect loops
+        if (active.length == 1 && active[0].get('type') == 'line') {
+            console.log("toggle");
+            graph.toggleDirection(active[0].id);
+        }
+        canvas.renderAll();
     }
 
     // changes the color of the selected vertices
@@ -284,7 +301,7 @@ class Graph {
         vertex2.degree++;
         vertex2.updateDegText();
 
-        let edge = new Edge(id, vertex1, vertex2, loopOffset, isParallel, parallelOffset);
+        let edge = new Edge(id, vertex1, vertex2, false, loopOffset, isParallel, parallelOffset);
         this.edges.push(edge);
         this.printGraph();
         return edge;
@@ -310,6 +327,7 @@ class Graph {
         let deleteEdgesList = [];
         vertex.edgeIds.forEach(function (edgeId) {
             let edge = graph.getEdge(edgeId);
+            graph.updateVertexPropertiesOnEdgeDelete(edge);
             graph.removeByValue(graph.edges, edge); // remove from graph edges
             deleteEdgesList.push(edge); // to delete graphics
             // (don't have to worry about adjList)
@@ -334,24 +352,28 @@ class Graph {
             this.removeByValue(this.adjList.get(edge.v1), edge.v2);
             this.removeByValue(this.adjList.get(edge.v2), edge.v1);
 
-            // Upate loop, parallel, deg
-            if (edge.isLoop) {
-                edge.v1.degree -= 2;
-                edge.v1.updateDegText();
-            } else {
-                if (edge.isParallel) {
-                edge.v1.parallels--;
-                edge.v2.parallels--;
-                }
-
-                edge.v1.degree--;
-                edge.v2.degree--;
-                edge.v1.updateDegText();
-                edge.v2.updateDegText();
-            }
+            this.updateVertexPropertiesOnEdgeDelete(edge);
         }
 
         return edge;
+    }
+
+    // // Upates loop, parallel, deg of adjacent vertices on edge delete.
+    updateVertexPropertiesOnEdgeDelete(edge) {
+        if (edge.isLoop) {
+            edge.v1.degree -= 2;
+            edge.v1.updateDegText();
+        } else {
+            if (edge.isParallel) {
+            edge.v1.parallels--;
+            edge.v2.parallels--;
+            }
+
+            edge.v1.degree--;
+            edge.v2.degree--;
+            edge.v1.updateDegText();
+            edge.v2.updateDegText();
+        }
     }
 
     // Returns the vertex with id. If none exists, creates a new vetex.
@@ -373,6 +395,14 @@ class Graph {
             }
         });
         return edge;
+    }
+
+    // toggles the direction of the vertex with id: v1 to v2, v2 to v1, undirected
+    toggleDirection(id) {
+        let edge = this.getEdge(id);
+        if (edge != null) {
+            edge.toggleDirection();
+        }
     }
 
     // removes the first instance of value from array
@@ -474,17 +504,18 @@ class Vertex {
 
 class Edge {
     // Edge constructor, requires start and edge vertices.
-    constructor(id, v1, v2, loopOffset, isParallel, parallelOffset) {
+    constructor(id, v1, v2, isDirected, loopOffset, isParallel, parallelOffset) {
         this.id = id
         this.v1 = v1;
         this.v2 = v2;
+        this.isDirected = isDirected;
+        this.toggleModeMode = this.isDirected; // signals toggle to/from directed edge
         this.isLoop = (v1 == v2);
         this.loopOffset = loopOffset;
         this.isParallel = isParallel;
         this.parallelOffset = parallelOffset;
 
-        let [x1, y1, x2, y2] = this.calcEdgePosition();
-
+        let [x1, y1, x2, y2] = this.calcStraightPosition();
         if (this.isLoop) {
             // Draw loop from one vertex to iteslf for graphics
             let [x1, y1, x2, y2] = this.calcEdgePosition();
@@ -505,7 +536,6 @@ class Edge {
             });
         } else {
             // Draw straight line from one vertex to another for graphics
-            let [x1, y1, x2, y2] = this.calcStraightPosition();
             this.line = new fabric.Line([x1, y1, x2, y2], {
                 id: id,
                 originX: 'center',
@@ -517,22 +547,51 @@ class Edge {
                 hoverCursor: "pointer"
             });
         }
+
+        // Directed edge (arc) graphics:
+        this.arrow = new fabric.Triangle({
+            left: x1 + 27,
+            top: y1,
+            originX: 'center',
+            originY: 'center',
+            width: 13,
+            height: 13,
+            angle: -90,
+            fill: EDGE_COLOR,
+            selectable: false,
+            hoverCursor: 'default',
+            visibility: this.isDirected
+        });
     }
 
     // Updates the position of the edge graphics
     updatePosition() {
+        let [x1, y1, x2, y2] = this.calcStraightPosition();
         if (this.isLoop) {
             let [x1, y1, x2, y2] = this.calcEdgePosition();
             this.line.set('left', x1);
             this.line.set('top', y1 + LOOP_Y_OFFSET);
         } else {
-            let [x1, y1, x2, y2] = this.calcStraightPosition();
             this.line.set('x1', x1);
             this.line.set('y1', y1);
             this.line.set('x2', x2);
             this.line.set('y2', y2);
         }
+        this.arrow.set('left', x1 + 21);
+        this.arrow.set('top', y1);
+
         this.line.setCoords();
+        this.arrow.setCoords();
+    }
+
+    // Updates arrow graphics.
+    updateArrow() {
+        this.arrow.set('visibile', this.isDirected);
+        this.updatePosition();
+
+        console.log(this.isDirected);
+        console.log(this.toggleMode);
+        console.log(this.arrow.get('visibility'));
     }
 
     // Calculates the coordinates of the edge based on its adjacent vertices
@@ -561,5 +620,40 @@ class Edge {
         y2 += this.parallelOffset;
 
         return [x1, y1, x2, y2]
+    }
+
+    // Toggles the direction of the edge: v1 to v2, v2 to v1, undirected
+    toggleDirection() {
+        let result = -1;
+        if (!this.isDirected) {
+            // toggle: v1 to v2
+            this.isDirected = true;
+            this.toggleMode = true;
+            result = 1;
+        } else if (this.isDirected && this.toggleMode) {
+            // toggle: v2 to v1
+            this.flipVertices();
+            this.isDirected = true;
+            this.toggleMode = false;
+            result = 2;
+        } else if (this.isDirected && !this.toggleMode) {
+            // toggle: undirected
+            this.flipVertices();
+            this.isDirected = false;
+            this.toggleMode = false;
+            result = 3;
+        }
+
+        console.log(result);
+        this.updateArrow();
+        return result;
+    }
+
+    // Swaps v1 and v2.
+    flipVertices() {
+        console.log("flipping vertices");
+        let vOne = this.v1;
+        this.v1 = this.v2;
+        this.v2 = vOne;
     }
 }
