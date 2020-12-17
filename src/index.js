@@ -145,8 +145,6 @@ const ID_COLOR = '#333333';
     function deleteSelected(e) {
         // First delete edges:
         let active = canvas.getActiveObjects();
-        console.log('active1');
-        console.log(active);
         for (var object of active) {
             if (object.get('type') == 'line' || object.get('type') == 'ellipse') {
                 graph.deleteEdge(object.id); // delete edge
@@ -156,12 +154,8 @@ const ID_COLOR = '#333333';
 
         // Second delete vertices:
         active = canvas.getActiveObjects();
-        console.log('active2');
-        console.log(active);
         for (var object of active) {
             if (object.get('type') == 'circle') {
-                console.log("removing");
-                console.log(object);
                 canvas.remove(graph.getVertex(object.id).idText); // delete text from canvas
                 let deleteEdgesList = graph.deleteVertex(object.id); // delete vertex
                 deleteEdgesList.forEach(function (edge) {
@@ -268,8 +262,6 @@ class Graph {
         if (vertex1 != vertex2) {
             vertex2.edgeIds.push(id); // not loop, second vertex needs id
         }
-        console.log(vertex1.edgeIds);
-        console.log(vertex2.edgeIds);
 
         let edge = new Edge(id, vertex1, vertex2, loopOffset, parallelOffset);
         this.edges.push(edge);
@@ -295,9 +287,7 @@ class Graph {
 
         // Delete all adjacent edges
         let deleteEdgesList = [];
-        console.log(vertex.edgeIds);
         vertex.edgeIds.forEach(function (edgeId) {
-            console.log(edgeId);
             let edge = graph.getEdge(edgeId);
             graph.removeByValue(graph.edges, edge); // remove from graph edges
             deleteEdgesList.push(edge); // to delete graphics
@@ -313,8 +303,6 @@ class Graph {
     // Deletes edge and returns it.
     deleteEdge(id) {
         let edge = this.getEdge(id);
-        console.log("deleting:");
-        console.log(edge);
 
         this.removeByValue(edge.v1.edgeIds, edge.id); // remove from v1 id list
         if (!edge.isLoop) {
