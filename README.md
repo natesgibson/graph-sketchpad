@@ -17,7 +17,8 @@ Contains 'intex.html' and 'style.css' which I used to style the webapp.\
 
 ### documents
 Contains 'Project Writeup' in .pdf and .docx formats, which outlines the features and implementation of the
-project as a narrative. Part of the final project requirements.
+project as a narrative.\
+Included as part of the final project requirements.
 
 ### node_modules
 Node.js library stuff.
