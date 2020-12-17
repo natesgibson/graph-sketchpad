@@ -8,9 +8,9 @@ const LOOP_Y_OFFSET = -33; // y-offset for loops
 const VERTEX_COLOR_1 = 'MediumAquaMarine';
 const VERTEX_COLOR_2 = 'CornflowerBlue';
 const VERTEX_COLOR_3 = 'Plum';
-const VERTEX_COLOR_4 = 'LightSalmon';
-const VERTEX_COLOR_5 = 'DimGrey';
-const VERTEX_COLOR_6 = 'Khaki';
+const VERTEX_COLOR_4 = 'DimGrey';
+const VERTEX_COLOR_5 = 'Khaki';
+const VERTEX_COLOR_6 = 'LightSalmon';
 
 const EDGE_COLOR = 'darkgrey';
 const ID_COLOR = '#333333';
@@ -28,7 +28,7 @@ const ID_COLOR = '#333333';
     function init() {
         // Set up Fabric.js canvas:
         canvas = new fabric.Canvas('canvas1');
-        canvas.setWidth(window.innerWidth * 0.9);
+        canvas.setWidth(window.innerWidth * 0.8);
         canvas.setHeight(window.innerHeight * 0.8);
         fabric.Group.prototype.hasControls = false;
         canvas.preserveObjectStacking = true;
@@ -49,11 +49,7 @@ const ID_COLOR = '#333333';
 
         // Other Events:
         document.addEventListener('keydown', keyDownSwitch);
-        canvas.on('object:moving', function () {
-            updateEdges();
-            updateVertexIDs();
-        });
-        canvas.on('object:moving', function () {
+        canvas.on('object:moving', function() {
             updateEdges();
             updateVertexIDs();
         });
@@ -112,7 +108,10 @@ const ID_COLOR = '#333333';
             let vertex = graph.addVertex(posX, posY);
             canvas.add(vertex.circle);
             canvas.add(vertex.idText);
+            canvas.add(vertex.degText);
+            // Note: Order matters!
             canvas.bringToFront(vertex.idText);
+            canvas.bringToFront(vertex.degText);
 
             canvas.renderAll();
             updateUI();
@@ -143,7 +142,7 @@ const ID_COLOR = '#333333';
 
     // Deletes all selected objects from graph and canvas.
     function deleteSelected(e) {
-        // First delete edges:
+        // First, delete edges:
         let active = canvas.getActiveObjects();
         for (var object of active) {
             if (object.get('type') == 'line' || object.get('type') == 'ellipse') {
@@ -152,11 +151,13 @@ const ID_COLOR = '#333333';
             }
         }
 
-        // Second delete vertices:
+        // Second, delete vertices:
         active = canvas.getActiveObjects();
         for (var object of active) {
             if (object.get('type') == 'circle') {
-                canvas.remove(graph.getVertex(object.id).idText); // delete text from canvas
+                let vertex = graph.getVertex(object.id);
+                canvas.remove(vertex.idText); // delete id text from canvas
+                canvas.remove(vertex.degText); // delete deg text from canvas
                 let deleteEdgesList = graph.deleteVertex(object.id); // delete vertex
                 deleteEdgesList.forEach(function (edge) {
                     if (edge != null) {
@@ -193,7 +194,7 @@ const ID_COLOR = '#333333';
         }
     }
 
-    // Updates the graphics of all vertex ids.
+    // Updates the graphics of all vertex id texts.
     function updateVertexIDs() {
         for (var vertex of graph.adjList.keys()) {
             vertex.updateTextPosition();
@@ -235,8 +236,10 @@ class Graph {
         let vertex2 = this.getVertex(v2);
 
         // offset for parallel edges:
+        let isParallel = false;
         let parallelOffset = 0;
-        if (this.adjList.get(vertex1).includes(vertex2)) {
+        if (vertex1 != vertex2 && this.adjList.get(vertex1).includes(vertex2)) {
+            isParallel = true;
             vertex1.parallels += 1;
             vertex2.parallels += 1;
             if (vertex1.parallels % 2 == 1) {
@@ -263,7 +266,13 @@ class Graph {
             vertex2.edgeIds.push(id); // not loop, second vertex needs id
         }
 
-        let edge = new Edge(id, vertex1, vertex2, loopOffset, parallelOffset);
+        // Update degree and degText
+        vertex1.degree++;
+        vertex1.updateDegText();
+        vertex2.degree++;
+        vertex2.updateDegText();
+
+        let edge = new Edge(id, vertex1, vertex2, loopOffset, isParallel, parallelOffset);
         this.edges.push(edge);
         this.printGraph();
         return edge;
@@ -309,9 +318,25 @@ class Graph {
         }
         this.removeByValue(this.edges, edge); // remove from graph edges
 
-        // TODO: Delete edge from adjList
+        // Delete edges from adjacency list
         this.removeByValue(this.adjList.get(edge.v1), edge.v2);
         this.removeByValue(this.adjList.get(edge.v2), edge.v1);
+
+        // Upate loop, parallel, deg
+        if (edge.isLoop) {
+            edge.v1.degree -= 2;
+            edge.v1.updateDegText();
+        } else {
+            if (edge.isParallel) {
+            edge.v1.parallels--;
+            edge.v2.parallels--;
+            }
+
+            edge.v1.degree--;
+            edge.v2.degree--;
+            edge.v1.updateDegText();
+            edge.v2.updateDegText();
+        }
 
         return edge;
     }
@@ -366,6 +391,7 @@ class Vertex {
     // Vertex constructor, requres id and x/y coordinates.
     constructor(id, x, y) {
         this.id = id;
+        this.degree = 0;
         this.loops = 0;
         this.parallels = 0;
         this.edgeIds = []; // ids of adjacent edges
@@ -383,10 +409,23 @@ class Vertex {
             hasControls: false,
         });
 
-        let [textX, textY] = this.calcTextCoords();
+        let [textX, textY] = this.calcTextPosition();
         this.idText = new fabric.Text(this.id + "", {
-            left: textX,
-            top: textY,
+            left: textX - 18,
+            top: textY + 16,
+            originX: 'center',
+            originY: 'center',
+            fill: ID_COLOR,
+            fontFamily: 'Calibri, sans-serif',
+            fontSize: 15,
+            selectable: false,
+            hoverCursor: 'default'
+        });
+        this.degText = new fabric.Text('deg ' + this.degree, {
+            left: textX + 28,
+            top: textY + 16,
+            originX: 'center',
+            originY: 'center',
             fill: ID_COLOR,
             fontFamily: 'Calibri, sans-serif',
             fontSize: 15,
@@ -395,31 +434,40 @@ class Vertex {
         });
     }
 
-    // Creates a new id text for the vertex.
+    // Updates vertex's text postion.
     updateTextPosition() {
-        let [x, y] = this.calcTextCoords();
+        let [x, y] = this.calcTextPosition();
 
-        this.idText.set('left', x);
-        this.idText.set('top', y);
+        this.idText.set('left', x - 18);
+        this.idText.set('top', y + 16);
+
+        this.degText.set('left', x + 28);
+        this.degText.set('top', y + 16);
     }
 
-    // Calculates the coordinates of the vertex text.
-    calcTextCoords() {
+    // Calculates the coordinates of the vertex's text.
+    calcTextPosition() {
         let coords = this.circle.calcOCoords();
-        let x = ((coords.tl.x + coords.tr.x) / 2) + 12;
-        let y = ((coords.tl.y + coords.bl.y) / 2) + 10;
+        let x = ((coords.tl.x + coords.tr.x) / 2);
+        let y = ((coords.tl.y + coords.bl.y) / 2);
         return [x, y];
+    }
+
+    // Update value of deg text
+    updateDegText() {
+        this.degText.set('text', 'deg ' + this.degree);
     }
 }
 
 class Edge {
     // Edge constructor, requires start and edge vertices.
-    constructor(id, v1, v2, loopOffset, parallelOffset) {
+    constructor(id, v1, v2, loopOffset, isParallel, parallelOffset) {
         this.id = id
         this.v1 = v1;
         this.v2 = v2;
         this.isLoop = (v1 == v2);
         this.loopOffset = loopOffset;
+        this.isParallel = isParallel;
         this.parallelOffset = parallelOffset;
 
         let [x1, y1, x2, y2] = this.calcEdgePosition();
