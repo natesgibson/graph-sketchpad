@@ -2,11 +2,11 @@
 
 ## Summary
 
-The project is a webapp developed as my final project for the course MATH/CPT_S 453 Graph Theory at WSU for Fall 2020.
+This project is a webapp developed as my final project for the course MATH/CPT_S 453 Graph Theory at WSU for Fall 2020.
 
 It is a graph sketchpad, allowing the user to sketch a graph and perform various graph operations.
 
-I made heavy use of the Javascript library Fabric.js (http://fabricjs.com/).
+I made heavy use of the JavaScript library Fabric.js (http://fabricjs.com/).
 
 A live version is hosted at: http://natesgibson.com/graph/.
 
@@ -18,7 +18,7 @@ Contains 'intex.html' and 'style.css' which I used to style the webapp.\
 ### documents
 Contains 'Project Writeup' in .pdf and .docx formats, which outlines the features and implementation of the
 project as a narrative.\
-Included as part of the final project requirements.
+(Included as part of the final project requirements.)
 
 ### node_modules
 Node.js library stuff.
