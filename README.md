@@ -8,6 +8,8 @@ It is a graph sketchpad, allowing the user to sketch a graph and perform various
 
 I made heavy use of the Javascript library Fabric.js (http://fabricjs.com/).
 
+A live version is hosted at: http://natesgibson.com/graph/.
+
 ## Repository Layout
 ### dist
 Contains 'intex.html' and 'style.css' which I used to style the webapp.\
