@@ -566,7 +566,7 @@ class Graph {
 
     // Prints the graph contents.
     printGraph() {
-        console.log("adjacency list:");
+        console.log("adjacency list");
         // For each vertex:
         for (let vertex of this.adjList.keys()) {
             let adjVertices = this.adjList.get(vertex);
