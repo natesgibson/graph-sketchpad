@@ -277,6 +277,17 @@ class Graph {
         array.splice(array.indexOf(value), 1);
     }
 
+    // Reutrns if the graph has any directed edges
+    getIsDirected() {
+        let isDirected = false;
+        this.edges.forEach(function (edge) {
+            if (edge.isDirected) {
+                isDirected = true;
+            }
+        });
+        return isDirected;
+    }
+
     // Returns the laplacian matrix of the graph
     getlapMatrix() {
         let matrix = [];
@@ -293,17 +304,6 @@ class Graph {
             row[vertex.id] = degree;
         }
         return matrix;
-    }
-
-    // Reutrns if the graph has any directed edges
-    getIsDirected() {
-        let isDirected = false;
-        this.edges.forEach(function (edge) {
-            if (edge.isDirected) {
-                isDirected = true;
-            }
-        });
-        return isDirected;
     }
 
     // Prints the graph contents.

@@ -1,6 +1,7 @@
 /*
 TODO:
 - Fix group movement postion stuff
+- Only update appropriate objects on mive
 - Different selection (color red?)
 - Help ui (?) for controls and such
 - UI info toggles
@@ -39,7 +40,6 @@ const VERTEX_COLOR_6 = 'LightSalmon';
         // Tracks mouse position in canvas:
         mousePos = { x: 0, y: 0 };
         document.addEventListener('mousemove', calcMousePos);
-
         // Tracks if mouse in canvas:
         inCanvas = false;
         let upperCanvas = document.getElementsByClassName("upper-canvas")[0];
@@ -56,7 +56,7 @@ const VERTEX_COLOR_6 = 'LightSalmon';
         lapMatBtn.addEventListener("click", printLapMatrix);
         canvas.on('object:moving', function() {
             updateEdges();
-            updateVertexIDs();
+            updateVertexText();
         });
     }
 
@@ -222,8 +222,8 @@ const VERTEX_COLOR_6 = 'LightSalmon';
         }
     }
 
-    // Updates the graphics of all vertex id texts.
-    function updateVertexIDs() {
+    // Updates the graphics of all vertex texts.
+    function updateVertexText() {
         for (var vertex of graph.adjList.keys()) {
             vertex.updateTextPosition();
             canvas.renderAll();
