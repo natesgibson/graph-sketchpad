@@ -362,7 +362,7 @@ class Graph {
             // (don't have to worry about adjList)
         });
 
-        //this.updateIds(vertex.id); // decrement appropriate vertex ids (order matters!)
+        this.updateIds(vertex.id); // decrement appropriate vertex ids (order matters!)
         this.adjList.delete(vertex); // delete this vertex's adjList entry
         // TODO: Update Ids?
         return deleteEdgesList;
@@ -449,11 +449,11 @@ class Graph {
 
     // Decriments the ids of all vertices id > id by 1 when a vertex of id is deleted.
     updateIds(id) {
-        // TODO: implement
         for (let i = id + 1; i < this.adjList.size; i++) {
             let vertex = this.getVertex(i);
             if (vertex != null) {
                 vertex.id--;
+                vertex.circle.id--;
                 vertex.updateIdText();
             }
         }
