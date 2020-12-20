@@ -247,7 +247,6 @@ const TEXT_FONT = 'Sans-Serif';
     // Prints the Laplacian matrix (WolframAlpha comaptable) if graph is undirected.
     function printLapMatrix() {
         let lapMatDisplay = document.getElementById('lapMat');
-        console.log(graph.getIsDirected());
         if (!graph.getIsDirected()) {
             let lapMatText = '{';
             let lapMatrix = graph.getlapMatrix();
@@ -266,6 +265,7 @@ const TEXT_FONT = 'Sans-Serif';
             lapMatText += '}';
             lapMatDisplay.innerText = lapMatText;
         } else {
+            lapMatDisplay.innerText = "Graph must be undirected."
         }
     }
 })();
