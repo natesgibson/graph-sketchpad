@@ -95,7 +95,6 @@ class Graph {
 
         this.updateIds(vertex.id); // decrement appropriate vertex ids (order matters!)
         this.adjList.delete(vertex); // delete this vertex's adjList entry
-        // TODO: Update Ids?
         return deleteEdgesList;
     }
 

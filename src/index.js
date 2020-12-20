@@ -2,6 +2,7 @@
 TODO:
 - Fix group movement postion stuff
 - Only update appropriate objects on mive
+- Fix edge arrow and parallel edge graphics
 - Different selection (color red?)
 - Help ui (?) for controls and such
 - UI info toggles
