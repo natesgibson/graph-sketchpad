@@ -3,8 +3,6 @@ TODO:
 - Fix group movement postion stuff
 - Different selection (color red?)
 - Help ui (?) for controls and such
-- Directed edges
-- Host on website
 - UI info toggles
 - More Features!
 */
@@ -246,25 +244,29 @@ const TEXT_FONT = 'Sans-Serif';
         mousePos.y = pointer.y;
     }
 
-    // Prints the Laplacian matrix (WolframAlpha comaptable)
+    // Prints the Laplacian matrix (WolframAlpha comaptable) if graph is undirected.
     function printLapMatrix() {
         let lapMatDisplay = document.getElementById('lapMat');
-        let lapMatText = '{';
-        let lapMatrix = graph.getlapMatrix();
-        for (let i = 0; i < lapMatrix.length; i++) {
-            let row = lapMatrix[i];
-            let rowText = '{';
-            for (let j = 0; j < row.length; j++) {
-                rowText += row[j] + ', ';
+        console.log(graph.getIsDirected());
+        if (!graph.getIsDirected()) {
+            let lapMatText = '{';
+            let lapMatrix = graph.getlapMatrix();
+            for (let i = 0; i < lapMatrix.length; i++) {
+                let row = lapMatrix[i];
+                let rowText = '{';
+                for (let j = 0; j < row.length; j++) {
+                    rowText += row[j] + ', ';
+                }
+                rowText = rowText.slice(0, -2);
+                rowText += '},';
+                lapMatText += rowText;
             }
-            rowText = rowText.slice(0, -2);
-            rowText += '},';
-            lapMatText += rowText;
-        }
 
-        if (lapMatrix.length > 0) { lapMatText = lapMatText.slice(0, -1); }
-        lapMatText += '}';
-        lapMatDisplay.innerText = lapMatText;
+            if (lapMatrix.length > 0) { lapMatText = lapMatText.slice(0, -1); }
+            lapMatText += '}';
+            lapMatDisplay.innerText = lapMatText;
+        } else {
+        }
     }
 })();
 
@@ -562,6 +564,17 @@ class Graph {
             row[vertex.id] = degree;
         }
         return matrix;
+    }
+
+    // Reutrns if the graph has any directed edges
+    getIsDirected() {
+        let isDirected = false;
+        this.edges.forEach(function (edge) {
+            if (edge.isDirected) {
+                isDirected = true;
+            }
+        });
+        return isDirected;
     }
 
     // Prints the graph contents.
