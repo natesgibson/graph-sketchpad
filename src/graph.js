@@ -21,6 +21,7 @@ class Graph {
 
     // Adds an undirected edge from v1 to v2.
     addEdge(v1, v2) {
+        // get edge's endpoint vertices:
         let vertex1 = this.getVertex(v1);
         let vertex2 = this.getVertex(v2);
 
@@ -38,6 +39,7 @@ class Graph {
             }
         }
 
+        // add edge to adjList:
         this.adjList.get(vertex1).push(vertex2);
         this.adjList.get(vertex2).push(vertex1);
 
@@ -61,7 +63,9 @@ class Graph {
         vertex2.degree++;
         vertex2.updateDegText();
 
+        console.log("yoyo");
         let edge = new Edge(id, vertex1, vertex2, false, loopOffset, isParallel, parallelOffset);
+        console.log('meme');
         this.edges.push(edge);
         this.printGraph();
         return edge;
@@ -159,7 +163,7 @@ class Graph {
         return edge;
     }
 
-    // toggles the direction of the vertex with id: v1 to v2, v2 to v1, undirected
+    // Toggles the direction of the vertex with id: v1 to v2, v2 to v1, undirected.
     toggleDirection(id) {
         let edge = this.getEdge(id);
         if (edge != null) {
@@ -261,7 +265,7 @@ class Graph {
         return [set1, set2];
     }
 
-    // return the intersection of two sets
+    // Return the intersection of two sets.
     getIntersection(set1, set2) {
         let intersection = new Set();
         for (let element of set1) {
@@ -272,12 +276,12 @@ class Graph {
         return intersection;
     }
 
-    // removes the first instance of value from array
+    // Removes the first instance of value from array.
     removeByValue(array, value) {
         array.splice(array.indexOf(value), 1);
     }
 
-    // Reutrns if the graph has any directed edges
+    // Reutrns if the graph has any directed edges.
     getIsDirected() {
         let isDirected = false;
         this.edges.forEach(function (edge) {
@@ -288,7 +292,7 @@ class Graph {
         return isDirected;
     }
 
-    // Returns the laplacian matrix of the graph
+    // Returns the laplacian matrix of the graph.
     getlapMatrix() {
         let matrix = [];
         for (let vertex of this.adjList.keys()) {

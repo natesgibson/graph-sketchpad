@@ -64,15 +64,21 @@ class Vertex {
         let coords = this.circle.calcOCoords();
         let x = ((coords.tl.x + coords.tr.x) / 2);
         let y = ((coords.tl.y + coords.bl.y) / 2);
+
+        if (this.circle.group != null) {
+            x = x + this.circle.group.left + (this.circle.group.width / 2);
+            y = y + this.circle.group.top + (this.circle.group.height / 2);
+        }
+        
         return [x, y];
     }
 
-    // Update value of deg text
+    // Update value of deg text.
     updateDegText() {
         this.degText.set('text', 'deg ' + this.degree);
     }
 
-    // Update the value of id text
+    // Update the value of id text.
     updateIdText() {
         this.idText.set('text', this.circle.id + '');
     }

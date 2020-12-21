@@ -6,6 +6,7 @@ TODO:
 - Different selection (color red?)
 - everything forced to stay in canvas (including on resize)
 - UI info (eg vertex text) toggles
+- Way to handle a lot of loops
 - More Features!
 */
 
@@ -29,7 +30,7 @@ const VERTEX_COLOR_6 = 'LightSalmon';
     var mousePos; // Mouse position in canvas
     var graph; // the graph
 
-    // Initialize function.
+    // Initialize function on window load.
     function init() {
         // Set up Fabric.js canvas:
         canvas = new fabric.Canvas('canvas1');
@@ -66,7 +67,7 @@ const VERTEX_COLOR_6 = 'LightSalmon';
         canvas.on('object:moving', updatePositionsOnMove);
     }
 
-    // Updates UI
+    // Updates UI.
     function updateUI(e) {
         let numVertices = graph.adjList.size;
         let numEdges = graph.edges.length;
@@ -169,8 +170,10 @@ const VERTEX_COLOR_6 = 'LightSalmon';
 
             canvas.add(edge.line);
             canvas.sendToBack(edge.line);
-            canvas.add(edge.arrow);
-            canvas.bringToFront(edge.arrow);
+            if (!edge.isLoop) {
+                canvas.add(edge.arrow);
+                canvas.bringToFront(edge.arrow);
+            }
 
             canvas.renderAll();
             updateUI();
@@ -183,7 +186,9 @@ const VERTEX_COLOR_6 = 'LightSalmon';
         let active = canvas.getActiveObjects();
         for (var object of active) {
             if (object.get('type') == 'line' || object.get('type') == 'ellipse') {
-                canvas.remove(graph.getEdge(object.id).arrow); // remove arrow from canvas
+                if (!object.isLoop) {
+                    canvas.remove(graph.getEdge(object.id).arrow); // remove arrow from canvas
+                }
                 graph.deleteEdge(object.id); // delete edge
                 canvas.remove(object); // remove line from canvas
             }
@@ -212,7 +217,7 @@ const VERTEX_COLOR_6 = 'LightSalmon';
         updateUI();
     }
 
-    // toggles the direction of the selected edge: v1 to v2, v2 to v1, undirected
+    // Toggles the direction of the selected edge: v1 to v2, v2 to v1, undirected.
     function toggleDirection() {
         let active = canvas.getActiveObjects();
         // Note, only checks for line, cannot effect loops
@@ -222,7 +227,7 @@ const VERTEX_COLOR_6 = 'LightSalmon';
         canvas.renderAll();
     }
 
-    // changes the color of the selected vertices
+    // Changes the color of the selected vertices.
     function changeColor(color) {
         let active = canvas.getActiveObjects();
 
@@ -234,30 +239,17 @@ const VERTEX_COLOR_6 = 'LightSalmon';
         canvas.renderAll();
     }
 
-    // Updates position of dependent graphical objects when an object is moved
-    function updatePositionsOnMove(e) {
-        let type = e.target.get('type');
-        if (type == 'circle') {
-            updateEdges();
-            updateVertexText();
-        } else if (type == 'activeSelection') {
-
-        }
-        canvas.renderAll();
-    }
-
-    // Updates the graphics of all edges.
-    function updateEdges() {
+    // Updates position of dependent graphical objects when an object is moved.
+    function updatePositionsOnMove() {
+        // update edge positions:
         for (var edge of graph.edges) {
             edge.updatePosition();
         }
-    }
-
-    // Updates the graphics of all vertex texts.
-    function updateVertexText() {
+        // update vertext text positions:
         for (var vertex of graph.adjList.keys()) {
             vertex.updateTextPosition();
         }
+        canvas.renderAll();
     }
 
     // Calculates the mouse position in the canvas and updates mousePos.
