@@ -4,9 +4,8 @@ TODO:
 - Only update appropriate objects on mive
 - Fix edge arrow and parallel edge graphics
 - Different selection (color red?)
-- Help ui (?) for controls and such
 - everything forced to stay in canvas (including on resize)
-- UI info toggles
+- UI info (eg vertex text) toggles
 - More Features!
 */
 

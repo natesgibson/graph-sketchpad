@@ -315,6 +315,7 @@ class Graph {
             for (let adjVertex of adjVertices) {
                 adjVerts += adjVertex.id + ", ";
             }
+            adjVerts = adjVerts.slice(0, -2);
             console.log(vertex.id + ": " + adjVerts); // print this vertex and its adjacent vertices
         }
         console.log("");
