@@ -5,6 +5,7 @@ TODO:
 - Fix edge arrow and parallel edge graphics
 - Different selection (color red?)
 - Help ui (?) for controls and such
+- everything forced to stay in canvas (including on resize)
 - UI info toggles
 - More Features!
 */
@@ -33,10 +34,15 @@ const VERTEX_COLOR_6 = 'LightSalmon';
     function init() {
         // Set up Fabric.js canvas:
         canvas = new fabric.Canvas('canvas1');
-        canvas.setWidth(window.innerWidth * 0.85);
-        canvas.setHeight(window.innerHeight * 0.65);
         fabric.Group.prototype.hasControls = false;
         canvas.preserveObjectStacking = true;
+        // Canvas size:
+        canvas.setWidth(window.innerWidth * 0.85);
+        canvas.setHeight(window.innerHeight * 0.65);
+        window.addEventListener('resize', function () {
+            canvas.setWidth(window.innerWidth * 0.85);
+            canvas.setHeight(window.innerHeight * 0.65);
+        });
 
         // Tracks mouse position in canvas:
         mousePos = { x: 0, y: 0 };
@@ -55,6 +61,9 @@ const VERTEX_COLOR_6 = 'LightSalmon';
         document.addEventListener('keydown', keyDownSwitch);
         let lapMatBtn = document.getElementById('lapMatBtn');
         lapMatBtn.addEventListener("click", printLapMatrix);
+        let help = document.getElementById('help');
+        help.addEventListener('mouseover', function() { toggleDisplayChildren(help); });
+        help.addEventListener('mouseout', function() { toggleDisplayChildren(help); });
         canvas.on('object:moving', function() {
             updateEdges();
             updateVertexText();
@@ -110,6 +119,20 @@ const VERTEX_COLOR_6 = 'LightSalmon';
             changeColor(VERTEX_COLOR_5); // 5 or numpad 5
         } else if (e.keyCode == 54 || e.keyCode == 102) {
             changeColor(VERTEX_COLOR_6); // 6 or numpad 6
+        }
+    }
+
+    // Toggles if element's children are displayed.
+    function toggleDisplayChildren(element) {
+        let children = element.children;
+        for (let i = 0; i < children.length; i++) {
+            let child = children[i];
+            let display = window.getComputedStyle(child).display;
+            if (display == 'none') {
+                child.style.display = 'block';
+            } else {
+                child.style.display = 'none';
+            }
         }
     }
 

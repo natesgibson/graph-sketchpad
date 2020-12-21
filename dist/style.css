@@ -38,6 +38,20 @@ p, h1, button {
     font-size: 12pt;
 }
 
+#help {
+    margin-bottom: 1%;
+}
+
+#help > * {
+    display: none;
+    margin-left: 50px;
+}
+
+h3 {
+    font-weight: normal;
+    text-decoration: underline;
+}
+
 #canvas1 {
     border: 2px solid slategrey;
     background-color: mintcream;
