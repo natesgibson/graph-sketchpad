@@ -93,7 +93,7 @@ class Graph {
             // (don't have to worry about adjList)
         });
 
-        this.updateIds(vertex.id); // decrement appropriate vertex ids (order matters!)
+        this.updateIds(vertex.circle.id); // decrement appropriate vertex ids (order matters!)
         this.adjList.delete(vertex); // delete this vertex's adjList entry
         return deleteEdgesList;
     }
@@ -120,26 +120,28 @@ class Graph {
 
     // Upates loop, parallel, deg of adjacent vertices on edge delete.
     updateVertexPropertiesOnEdgeDelete(edge) {
-        if (edge.isLoop) {
-            edge.v1.degree -= 2;
-            edge.v1.updateDegText();
-        } else {
-            if (edge.isParallel) {
-            edge.v1.parallels--;
-            edge.v2.parallels--;
+        if (edge != null) {
+            if (edge.isLoop) {
+                edge.v1.degree -= 2;
+                edge.v1.updateDegText();
+            } else {
+                if (edge.isParallel) {
+                edge.v1.parallels--;
+                edge.v2.parallels--;
+                }
+    
+                edge.v1.degree--;
+                edge.v2.degree--;
+                edge.v1.updateDegText();
+                edge.v2.updateDegText();
             }
-
-            edge.v1.degree--;
-            edge.v2.degree--;
-            edge.v1.updateDegText();
-            edge.v2.updateDegText();
         }
     }
 
     // Returns the vertex with id. If none exists, creates a new vetex.
     getVertex(id) {
         for (let vertex of this.adjList.keys()) {
-            if (vertex.id == id) {
+            if (vertex.circle.id == id) {
                 return vertex;
             }
         }
@@ -182,7 +184,6 @@ class Graph {
         for (let i = id + 1; i < this.adjList.size; i++) {
             let vertex = this.getVertex(i);
             if (vertex != null) {
-                vertex.id--;
                 vertex.circle.id--;
                 vertex.updateIdText();
             }
@@ -295,12 +296,12 @@ class Graph {
             for (let i = 0; i < this.adjList.size; i++) { row[i] = 0; }
             let adjacents = this.adjList.get(vertex);
             adjacents.forEach(function(adj) {
-                row[adj.id]++;
+                row[adj.circle.id]++;
             });
             matrix.push(row);
             let degree = -vertex.degree;
             if (degree == -0) { degree = 0; }
-            row[vertex.id] = degree;
+            row[vertex.circle.id] = degree;
         }
         return matrix;
     }
@@ -313,10 +314,10 @@ class Graph {
             let adjVertices = this.adjList.get(vertex);
             let adjVerts = "";
             for (let adjVertex of adjVertices) {
-                adjVerts += adjVertex.id + ", ";
+                adjVerts += adjVertex.circle.id + ", ";
             }
             adjVerts = adjVerts.slice(0, -2);
-            console.log(vertex.id + ": " + adjVerts); // print this vertex and its adjacent vertices
+            console.log(vertex.circle.id + ": " + adjVerts); // print this vertex and its adjacent vertices
         }
         console.log("");
     }

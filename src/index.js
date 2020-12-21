@@ -63,10 +63,7 @@ const VERTEX_COLOR_6 = 'LightSalmon';
         let help = document.getElementById('help');
         help.addEventListener('mouseover', function() { toggleDisplayChildren(help); });
         help.addEventListener('mouseout', function() { toggleDisplayChildren(help); });
-        canvas.on('object:moving', function() {
-            updateEdges();
-            updateVertexText();
-        });
+        canvas.on('object:moving', updatePositionsOnMove);
     }
 
     // Updates UI
@@ -237,11 +234,22 @@ const VERTEX_COLOR_6 = 'LightSalmon';
         canvas.renderAll();
     }
 
+    // Updates position of dependent graphical objects when an object is moved
+    function updatePositionsOnMove(e) {
+        let type = e.target.get('type');
+        if (type == 'circle') {
+            updateEdges();
+            updateVertexText();
+        } else if (type == 'activeSelection') {
+
+        }
+        canvas.renderAll();
+    }
+
     // Updates the graphics of all edges.
     function updateEdges() {
         for (var edge of graph.edges) {
             edge.updatePosition();
-            canvas.renderAll();
         }
     }
 
@@ -249,7 +257,6 @@ const VERTEX_COLOR_6 = 'LightSalmon';
     function updateVertexText() {
         for (var vertex of graph.adjList.keys()) {
             vertex.updateTextPosition();
-            canvas.renderAll();
         }
     }
 

@@ -5,7 +5,6 @@ const TEXT_FONT = 'Sans-Serif';
 class Vertex {
     // Vertex constructor, requres id and x/y coordinates.
     constructor(id, x, y) {
-        this.id = id;
         this.degree = 0;
         this.loops = 0;
         this.parallels = 0;
@@ -25,7 +24,7 @@ class Vertex {
         });
 
         let [textX, textY] = this.calcTextPosition();
-        this.idText = new fabric.Text(this.id + "", {
+        this.idText = new fabric.Text(this.circle.id + "", {
             left: textX - 18,
             top: textY + 20,
             originX: 'center',
@@ -75,7 +74,7 @@ class Vertex {
 
     // Update the value of id text
     updateIdText() {
-        this.idText.set('text', this.id + '');
+        this.idText.set('text', this.circle.id + '');
     }
 }
 
