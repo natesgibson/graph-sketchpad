@@ -1,55 +1,71 @@
 body {
+    font-family: 'Calibri', sans-serif;
+    background-color: azure;
+    min-height: 100%;
+    min-width: 100%;
     margin: 0;
-    font-family: 'Courier';
-}
-
-p {
-    margin: 5px;
 }
 
 main {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    align-content: space-between;
-    background-color: azure;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-evenly;
 }
 
-h1 {
-    font-weight: normal;
-}
-
-p, h1, button {
-    color: #333333;
-}
-
-#ui {
-    align-self: flex-start;
-    margin-left: 10px;
-    margin-top: 8px;
-
+#left {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    align-content: flex-start;
+    justify-content: flex-start;
+
+    margin-left: 1%;
+    margin-top: 85px;
+    width: 10%;
+}
+
+#ui {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
+#ui > * {
+    margin-top: 0;
+    margin-bottom: 15px;
 }
 
 #ui p {
     font-size: 12pt;
 }
 
-#help, .checkbox {
-    margin-bottom: 1%;
-}
-
 #help > * {
     display: none;
-    margin-left: 50px;
 }
 
 h3 {
     font-weight: normal;
     text-decoration: underline;
+}
+
+#mid {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+
+    margin-right: 1%;
+    width: 88%;
+}
+
+h1, p, button {
+    color: #333333;
+}
+
+h1 {
+    font-weight: normal;
+    font-size: 26pt;
 }
 
 #canvas1 {
@@ -63,13 +79,17 @@ h3 {
 
 .info {
     display: flex;
+    flex-direction: row;
     align-self: flex-start;
     align-items: flex-start;
     justify-content: center;
-    flex-direction: row;
-    margin-left: 7.5%;
-    margin-right: 7.5%;
-    margin-bottom: 4%;
+
+    margin-bottom: 50px;
+    margin-left: 1.8%;
+}
+
+.info > * {
+    margin-top: 0;
 }
 
 button {
@@ -81,7 +101,8 @@ button {
     text-align: center;
     font-weight: bold;
     cursor: pointer;
-    margin-right: 15px;
+    margin-right: 20px;
+    min-width: 9.5em;
 }
 
 button:hover {

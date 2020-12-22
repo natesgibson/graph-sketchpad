@@ -1,5 +1,6 @@
 /*
 TODO:
+- restyle
 - Fix isBipartite?
 - Fix edge arrow and parallel edge graphics
 - Way to graphically handle a lot of loops
@@ -35,10 +36,10 @@ const VERTEX_COLOR_6 = 'LightSalmon';
         canvas.preserveObjectStacking = true;
         // Canvas size:
         canvas.setWidth(window.innerWidth * 0.85);
-        canvas.setHeight(window.innerHeight * 0.65);
+        canvas.setHeight(window.innerHeight * 0.75);
         window.addEventListener('resize', function () {
             canvas.setWidth(window.innerWidth * 0.85);
-            canvas.setHeight(window.innerHeight * 0.65);
+            canvas.setHeight(window.innerHeight * 0.75);
         });
 
         // Tracks mouse position in canvas:
