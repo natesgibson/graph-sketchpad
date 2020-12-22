@@ -4,7 +4,6 @@ const LOOP_Y_OFFSET = -33;
 class Edge {
     // Edge constructor, requires start and edge vertices.
     constructor(id, v1, v2, isDirected, loopOffset, isParallel, parallelOffset) {
-        this.id = id
         this.v1 = v1;
         this.v2 = v2;
         this.isDirected = isDirected;

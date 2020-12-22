@@ -1,7 +1,5 @@
 /*
 TODO:
-- Fix group movement postion stuff
-- Only update appropriate objects on mive
 - Fix edge arrow and parallel edge graphics
 - Different selection (color red?)
 - everything forced to stay in canvas (including on resize)
@@ -181,33 +179,28 @@ const VERTEX_COLOR_6 = 'LightSalmon';
     }
 
     // Deletes all selected objects from graph and canvas.
-    function deleteSelected(e) {
-        // First, delete edges:
+    function deleteSelected() {
+        // First, delete selected edges:
         let active = canvas.getActiveObjects();
         for (var object of active) {
             if (object.get('type') == 'line' || object.get('type') == 'ellipse') {
-                if (!object.isLoop) {
-                    canvas.remove(graph.getEdge(object.id).arrow); // remove arrow from canvas
-                }
-                graph.deleteEdge(object.id); // delete edge
-                canvas.remove(object); // remove line from canvas
+                deleteEdge(graph.getEdge(object.id));
             }
         }
 
-        // Second, delete vertices:
+        // Second, delete selected vertices:
         active = canvas.getActiveObjects();
         for (var object of active) {
             if (object.get('type') == 'circle') {
                 let vertex = graph.getVertex(object.id);
-                canvas.remove(vertex.idText); // delete id text from canvas
-                canvas.remove(vertex.degText); // delete deg text from canvas
-                let deleteEdgesList = graph.deleteVertex(object.id); // delete vertex
-                deleteEdgesList.forEach(function (edge) {
-                    if (edge != null) {
-                        canvas.remove(edge.line); // Delete appropriate edges from canvas
-                    }
-                });
-                canvas.remove(object); // remove from canvas
+                canvas.remove(vertex.idText);
+                canvas.remove(vertex.degText);
+                graph.deleteVertex(vertex.circle.id);
+                // delete each adjacent edge:
+                while (vertex.edgeIds.length > 0) {
+                    deleteEdge(graph.getEdge(vertex.edgeIds[0]));
+                }
+                canvas.remove(object);
             }
         }
 
@@ -215,6 +208,13 @@ const VERTEX_COLOR_6 = 'LightSalmon';
         canvas.renderAll();
         graph.printGraph();
         updateUI();
+    }
+
+    // Deletes edge from graph and removes it from canvas.
+    function deleteEdge(edge) {
+        graph.deleteEdge(edge.line.id);
+        canvas.remove(edge.line);
+        if (!edge.isLoop) { canvas.remove(edge.arrow); }
     }
 
     // Toggles the direction of the selected edge: v1 to v2, v2 to v1, undirected.
@@ -241,13 +241,18 @@ const VERTEX_COLOR_6 = 'LightSalmon';
 
     // Updates position of dependent graphical objects when an object is moved.
     function updatePositionsOnMove() {
-        // update edge positions:
-        for (var edge of graph.edges) {
-            edge.updatePosition();
-        }
-        // update vertext text positions:
-        for (var vertex of graph.adjList.keys()) {
-            vertex.updateTextPosition();
+        let active = canvas.getActiveObjects();
+        for (var object of active) {
+            if (object.get('type') == 'circle') {
+                let vertex = graph.getVertex(object.id);
+                let adjEdges = graph.getVertex(vertex.circle.id).edgeIds;
+                for (let i = 0; i < adjEdges.length; i++) {
+                    graph.getEdge(adjEdges[i]).updatePosition();
+                }
+                vertex.updateTextPosition();
+            } else if (object.get('type') == 'line' || object.get('type') == 'ellipse') {
+                graph.getEdge(object.id).updatePosition();
+            }
         }
         canvas.renderAll();
     }

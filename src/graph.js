@@ -63,63 +63,37 @@ class Graph {
         vertex2.degree++;
         vertex2.updateDegText();
 
-        console.log("yoyo");
         let edge = new Edge(id, vertex1, vertex2, false, loopOffset, isParallel, parallelOffset);
-        console.log('meme');
         this.edges.push(edge);
         this.printGraph();
         return edge;
     }
 
-    // Deletes vertex with id. Returns the list of edges to be deleted in the canvas.
+    // Deletes vertex with id.
     deleteVertex(id) {
         let vertex = this.getVertex(id);
-
-        // Delete vertex from adjList entries of adjacent vertices
-        let graph = this;
-        let adjacentVertices = this.adjList.get(vertex);
-        adjacentVertices.forEach(function (adjVertex) {
-            let adjVertexAdjList = graph.adjList.get(adjVertex);
-            adjVertexAdjList.forEach(function (adjAdjVert, index, object) {
-                if (adjAdjVert == vertex) {
-                    object.splice(index, 1); // remove from adjList
-                }
-            });
-        });
-
-        // Delete all adjacent edges
-        let deleteEdgesList = [];
-        vertex.edgeIds.forEach(function (edgeId) {
-            let edge = graph.getEdge(edgeId);
-            graph.updateVertexPropertiesOnEdgeDelete(edge); // update adjacent vertex properties
-            graph.removeByValue(graph.edges, edge); // remove from graph edges
-            deleteEdgesList.push(edge); // to delete graphics
-            // (don't have to worry about adjList)
-        });
-
         this.updateIds(vertex.circle.id); // decrement appropriate vertex ids (order matters!)
         this.adjList.delete(vertex); // delete this vertex's adjList entry
-        return deleteEdgesList;
     }
 
-    // Deletes edge and returns it.
+    // Deletes edge with id.
     deleteEdge(id) {
         let edge = this.getEdge(id);
         if (edge != null) {
-            this.removeByValue(edge.v1.edgeIds, edge.id); // remove from v1 id list
+            this.removeByValue(edge.v1.edgeIds, edge.line.id); // remove from v1 id list
             if (!edge.isLoop) {
-                this.removeByValue(edge.v2.edgeIds, edge.id); // remove from v2 id list
+                this.removeByValue(edge.v2.edgeIds, edge.line.id); // remove from v2 id list
             }
 
             // Delete edges from adjacency list
-            this.removeByValue(this.adjList.get(edge.v1), edge.v2);
-            this.removeByValue(this.adjList.get(edge.v2), edge.v1);
+            let vertex1 = this.adjList.get(edge.v1);
+            let vertex2 = this.adjList.get(edge.v2);
+            if (vertex1 != null) {this.removeByValue(vertex1, edge.v2); }
+            if (vertex2 != null) {this.removeByValue(vertex2, edge.v1); }
 
             this.updateVertexPropertiesOnEdgeDelete(edge); // update adjacent vertex properties
             this.removeByValue(this.edges, edge); // remove from graph edges
         }
-
-        return edge;
     }
 
     // Upates loop, parallel, deg of adjacent vertices on edge delete.
@@ -155,9 +129,9 @@ class Graph {
     // Returns the edge with id.
     getEdge(id) {
         let edge = null;
-        this.edges.forEach(function (e) {
-            if (e.id == id) {
-                edge = e;
+        this.edges.forEach(function (ed) {
+            if (ed.line.id == id) {
+                edge = ed;
             }
         });
         return edge;
