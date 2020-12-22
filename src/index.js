@@ -1,10 +1,10 @@
 /*
 TODO:
-- everything forced to stay in canvas (including on resize)
 - UI info (eg vertex text) toggles
 - Fix isBipartite?
 - Fix edge arrow and parallel edge graphics
 - Way to graphically handle a lot of loops
+- everything forced to stay in canvas (including on resize)
 - More Features!
 */
 
@@ -63,6 +63,27 @@ const VERTEX_COLOR_6 = 'LightSalmon';
         help.addEventListener('mouseover', function() { toggleDisplayChildren(help); });
         help.addEventListener('mouseout', function() { toggleDisplayChildren(help); });
         canvas.on('object:moving', updatePositionsOnMove);
+        document.getElementById('vertex_ids').addEventListener('change', toggleDisplayVertexIds);
+        document.getElementById('vertex_degrees').addEventListener('change', toggleDisplayVertexDegrees);
+
+        canvas.on('object:moving', function (e) {
+            var obj = e.target;
+            // if object is too big ignore
+            if(obj.currentHeight > obj.canvas.height || obj.currentWidth > obj.canvas.width){
+              return;
+            }
+            obj.setCoords();
+            // top-left  corner
+            if(obj.getBoundingRect().top < 0 || obj.getBoundingRect().left < 0){
+              obj.top = Math.max(obj.top, obj.top-obj.getBoundingRect().top);
+              obj.left = Math.max(obj.left, obj.left-obj.getBoundingRect().left);
+            }
+            // bot-right corner
+            if(obj.getBoundingRect().top+obj.getBoundingRect().height  > obj.canvas.height || obj.getBoundingRect().left+obj.getBoundingRect().width  > obj.canvas.width){
+              obj.top = Math.min(obj.top, obj.canvas.height-obj.getBoundingRect().height+obj.top-obj.getBoundingRect().top);
+              obj.left = Math.min(obj.left, obj.canvas.width-obj.getBoundingRect().width+obj.left-obj.getBoundingRect().left);
+            }
+        });
     }
 
     // Updates UI.
@@ -236,6 +257,30 @@ const VERTEX_COLOR_6 = 'LightSalmon';
                 object.set('fill', color);
             }
         });
+        canvas.renderAll();
+    }
+
+    // Toggles whether the index of vertices is displayed
+    function toggleDisplayVertexIds(e) {
+        for (var vertex of graph.adjList.keys()) {
+            if (e.target.checked) {
+                vertex.idText.set('visible', true);
+            } else {
+                vertex.idText.set('visible', false);
+            }
+        }
+        canvas.renderAll();
+    }
+
+    // Toggles whether the degree of vertices is displayed
+    function toggleDisplayVertexDegrees(e) {
+        for (var vertex of graph.adjList.keys()) {
+            if (e.target.checked) {
+                vertex.degText.set('visible', true);
+            } else {
+                vertex.degText.set('visible', false);
+            }
+        }
         canvas.renderAll();
     }
 

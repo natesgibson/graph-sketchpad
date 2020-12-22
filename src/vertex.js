@@ -50,7 +50,8 @@ class Vertex {
             fontFamily: TEXT_FONT,
             fontSize: 15,
             selectable: false,
-            hoverCursor: 'default'
+            hoverCursor: 'default',
+            visible: false
         });
 
         // Selection graphics update:
