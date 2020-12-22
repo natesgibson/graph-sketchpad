@@ -27,6 +27,6 @@ Node.js library stuff.
 Contains scripts consisting of 'index.js' and 'graph.js', 'vertex.js', and 'edge.js' class files.
 
 ## Instructions to Run Locally
-If you want to run the web app locally, you only need the 'dist' folder. I would not recommend downloading the entire ~100mb project unless you plan to develop it. For the scripting implementation, see the 'src' folder.
+If you want to run the web app locally, you only need the 'dist' folder. I would not recommend downloading the entire ~100mb project unless you plan to develop it (I don't really know how webpack works so I just uploaded the entire 'node_modules' folder). For the scripting implementation, see the 'src' folder.
 
 Open 'index.html' in a modern web browser to run. I have not tested this on anything other than an updated Chrome on Windows 10 (December 2020).
