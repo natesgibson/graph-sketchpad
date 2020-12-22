@@ -315,7 +315,7 @@ const VERTEX_COLOR_6 = 'LightSalmon';
     // Prints the Laplacian matrix (WolframAlpha comaptable) if graph is undirected.
     function printLapMatrix() {
         let lapMatDisplay = document.getElementById('lapMat');
-        if (!graph.getIsDirected()) {
+        if (!graph.getHasLoops() && !graph.getIsDirected()) {
             let lapMatText = '{';
             let lapMatrix = graph.getlapMatrix();
             for (let i = 0; i < lapMatrix.length; i++) {
@@ -333,7 +333,7 @@ const VERTEX_COLOR_6 = 'LightSalmon';
             lapMatText += '}';
             lapMatDisplay.innerText = lapMatText;
         } else {
-            lapMatDisplay.innerText = "Graph must be undirected."
+            lapMatDisplay.innerText = "Graph must be loopless and undirected."
         }
     }
 })();

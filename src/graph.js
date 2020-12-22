@@ -255,6 +255,17 @@ class Graph {
         array.splice(array.indexOf(value), 1);
     }
 
+    // Reutrns if the graph has any loops.
+    getHasLoops() {
+        let hasLoops = false;
+        this.edges.forEach(function (edge) {
+            if (edge.isLoop) {
+                hasLoops = true;
+            }
+        });
+        return hasLoops;
+    }
+
     // Reutrns if the graph has any directed edges.
     getIsDirected() {
         let isDirected = false;
