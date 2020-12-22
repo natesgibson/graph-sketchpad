@@ -1,10 +1,10 @@
 /*
 TODO:
 - Fix edge arrow and parallel edge graphics
-- Different selection (color red?)
 - everything forced to stay in canvas (including on resize)
 - UI info (eg vertex text) toggles
 - Way to handle a lot of loops
+- Fix isBipartite?
 - More Features!
 */
 

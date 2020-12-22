@@ -1,4 +1,5 @@
-const EDGE_COLOR = 'darkgrey';
+const EDGE_DEFAULT_COLOR = 'darkgrey';
+const EDGE_SELECTED_COLOR = 'red';
 const LOOP_Y_OFFSET = -33;
 
 class Edge {
@@ -25,22 +26,24 @@ class Edge {
                 rx: 20 + this.loopOffset, // horizontal raduis
                 ry: 22 + this.loopOffset, // vertical radius
                 fill: 'rgba(0,0,0,0)',
-                stroke: EDGE_COLOR,
+                stroke: EDGE_DEFAULT_COLOR,
                 strokeWidth: 2,
                 hasControls: false,
                 lockMovement: true,
-                hoverCursor: "pointer"
+                hoverCursor: "pointer",
+                hasBorders: false
             });
         } else {
             this.line = new fabric.Line([x1, y1, x2, y2], {
                 id: id,
                 originX: 'center',
                 originY: 'center',
-                stroke: EDGE_COLOR,
+                stroke: EDGE_DEFAULT_COLOR,
                 strokeWidth: 2,
                 hasControls: false,
                 lockMovement: true,
-                hoverCursor: "pointer"
+                hoverCursor: "pointer",
+                hasBorders: false
             });
 
             // Directed edge (arc) graphics:
@@ -52,12 +55,23 @@ class Edge {
                 width: 13,
                 height: 13,
                 angle: -90,
-                fill: EDGE_COLOR,
+                fill: EDGE_DEFAULT_COLOR,
                 selectable: false,
                 hoverCursor: 'default',
                 visible: this.isDirected
             });
         }
+
+        // Selection graphics update:
+        let edge = this;
+        this.line.on('selected', function () {
+            this.set('stroke', EDGE_SELECTED_COLOR);
+            if (!edge.isLoop) { edge.arrow.set('fill', EDGE_SELECTED_COLOR); }
+        });
+        this.line.on('deselected', function () {
+            this.set('stroke', EDGE_DEFAULT_COLOR);
+            if (!edge.isLoop) { edge.arrow.set('fill', EDGE_DEFAULT_COLOR); }
+        });
     }
 
     // Updates the position of the edge graphics.

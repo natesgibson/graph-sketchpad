@@ -1,5 +1,10 @@
 const VERTEX_RADIUS = 15;
-const ID_COLOR = '#333333';
+const VERTEX_DEFAULT_COLOR = 'MediumAquaMarine';
+const VERTEX_DEFAULT_STROKE_COLOR = 'SlateGrey';
+const VERTEX_DEFAULT_STROKE_WIDTH = 0.15;
+const VERTEX_SELECTED_STROKE_COLOR = 'red';
+const VERTEX_SELECTED_STROKE_WIDTH = 1;
+const TEXT_COLOR = '#333333';
 const TEXT_FONT = 'Sans-Serif';
 
 class Vertex {
@@ -16,11 +21,12 @@ class Vertex {
             top: y,
             originX: 'center',
             originY: 'center',
-            fill: 'MediumAquaMarine',
-            stroke: 'slategrey',
-            strokeWidth: 0.15,
+            fill: VERTEX_DEFAULT_COLOR,
+            stroke: VERTEX_DEFAULT_STROKE_COLOR,
+            strokeWidth: VERTEX_DEFAULT_STROKE_WIDTH,
             radius: VERTEX_RADIUS,
             hasControls: false,
+            hasBorders: false
         });
 
         let [textX, textY] = this.calcTextPosition();
@@ -29,7 +35,7 @@ class Vertex {
             top: textY + 20,
             originX: 'center',
             originY: 'center',
-            fill: ID_COLOR,
+            fill: TEXT_COLOR,
             fontFamily: TEXT_FONT,
             fontSize: 15,
             selectable: false,
@@ -40,11 +46,22 @@ class Vertex {
             top: textY + 18,
             originX: 'center',
             originY: 'center',
-            fill: ID_COLOR,
+            fill: TEXT_COLOR,
             fontFamily: TEXT_FONT,
             fontSize: 15,
             selectable: false,
             hoverCursor: 'default'
+        });
+
+        // Selection graphics update:
+        let vertex = this;
+        this.circle.on('selected', function () {
+            this.set('stroke', VERTEX_SELECTED_STROKE_COLOR);
+            this.set('strokeWidth', VERTEX_SELECTED_STROKE_WIDTH);
+        });
+        this.circle.on('deselected', function () {
+            this.set('stroke', VERTEX_DEFAULT_STROKE_COLOR);
+            this.set('strokeWidth', VERTEX_DEFAULT_STROKE_WIDTH);
         });
     }
 
