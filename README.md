@@ -13,7 +13,7 @@ A live version is hosted at: http://natesgibson.com/graph/.
 ## Repository Layout
 ### dist
 Contains 'intex.html' and 'style.css' which I used to style the web app.\
-'main.js' is built by Webpack. It is a combination of 'index.js' and Node.js library code.
+'main.js' is built by Webpack. It is a combination of 'index.js' and Node.js library module code.
 
 ### documents
 Contains 'Project Writeup' in .pdf and .docx formats, which outlines the features and implementation of the
@@ -21,7 +21,7 @@ project as a narrative.\
 (Included as part of the final project requirements. Last updated 12/17/2020.)
 
 ### node_modules
-Node.js library stuff.
+Node.js library modules.
 
 ### src
 Contains scripts consisting of 'index.js' and 'graph.js', 'vertex.js', and 'edge.js' class files.
