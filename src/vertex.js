@@ -9,7 +9,7 @@ const TEXT_FONT = 'Sans-Serif';
 
 class Vertex {
     // Vertex constructor, requres id and x/y coordinates.
-    constructor(id, x, y) {
+    constructor(id, x, y, displayId, displayDegree) {
         this.degree = 0;
         this.loops = 0;
         this.parallels = 0;
@@ -39,7 +39,8 @@ class Vertex {
             fontFamily: TEXT_FONT,
             fontSize: 15,
             selectable: false,
-            hoverCursor: 'default'
+            hoverCursor: 'default',
+            visible: displayId
         });
         this.degText = new fabric.Text('deg ' + this.degree, {
             left: textX + 28,
@@ -51,7 +52,7 @@ class Vertex {
             fontSize: 15,
             selectable: false,
             hoverCursor: 'default',
-            visible: false
+            visible: displayDegree
         });
 
         // Selection graphics update:

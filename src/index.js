@@ -1,6 +1,5 @@
 /*
 TODO:
-- UI info (eg vertex text) toggles
 - Fix isBipartite?
 - Fix edge arrow and parallel edge graphics
 - Way to graphically handle a lot of loops
@@ -159,7 +158,10 @@ const VERTEX_COLOR_6 = 'LightSalmon';
             let posX = mousePos.x;
             let posY = mousePos.y;
 
-            let vertex = graph.addVertex(posX, posY);
+            let displayId = document.getElementById('vertex_ids').checked;
+            let displayDegree = document.getElementById('vertex_degrees').checked;
+
+            let vertex = graph.addVertex(posX, posY, displayId, displayDegree);
             canvas.add(vertex.circle);
             canvas.add(vertex.idText);
             canvas.add(vertex.degText);

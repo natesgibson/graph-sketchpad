@@ -12,8 +12,8 @@ class Graph {
     }
 
     // Adds a new vertex to the graph.
-    addVertex(x, y) {
-        let vertex = new Vertex(this.idIncrement++, x, y);
+    addVertex(x, y, displayId, displayDegree) {
+        let vertex = new Vertex(this.idIncrement++, x, y, displayId, displayDegree);
         this.adjList.set(vertex, []);
         this.printGraph();
         return vertex;

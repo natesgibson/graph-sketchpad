@@ -38,7 +38,7 @@ p, h1, button {
     font-size: 12pt;
 }
 
-#help {
+#help, .checkbox {
     margin-bottom: 1%;
 }
 
