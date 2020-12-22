@@ -1,10 +1,10 @@
 /*
 TODO:
-- Fix edge arrow and parallel edge graphics
 - everything forced to stay in canvas (including on resize)
 - UI info (eg vertex text) toggles
-- Way to handle a lot of loops
 - Fix isBipartite?
+- Fix edge arrow and parallel edge graphics
+- Way to graphically handle a lot of loops
 - More Features!
 */
 
@@ -133,8 +133,8 @@ const VERTEX_COLOR_6 = 'LightSalmon';
 
     // Add a new vertex to graph at mouse position.
     function addVertex(e) {
-        // If mouse in canvas and nothing selected:
-        if (inCanvas && !canvas.getActiveObject()) {
+        // If mouse in canvas:
+        if (inCanvas) {
             let posX = mousePos.x;
             let posY = mousePos.y;
 
