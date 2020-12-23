@@ -67,6 +67,8 @@ const VERTEX_COLOR_6 = 'LightSalmon';
         document.getElementById('vertex_ids').addEventListener('change', toggleDisplayVertexIds);
         document.getElementById('vertex_degrees').addEventListener('change', toggleDisplayVertexDegrees);
 
+        //https://stackoverflow.com/questions/48564274/fabricjs-line-selection-with-perpixeltargetfind-varies-depending-on-angle-of-lin
+        
         // canvas.on('object:moving', function (e) {
         //     var obj = e.target;
         //     // if object is too big ignore
