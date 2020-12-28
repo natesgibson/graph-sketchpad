@@ -86,19 +86,10 @@ class Edge {
             this.line.set('x2', x2);
             this.line.set('y2', y2);
 
-             // TODO: Correct Arrow position/angel
-            this.arrow.set('left', x1 + 21);
-            this.arrow.set('top', y1);
-            this.arrow.setCoords();
+            this.updateArrow(x1, y1, x2, y2);
         }
 
         this.line.setCoords();
-    }
-
-    // Updates arrow graphics.
-    updateArrow() {
-        this.arrow.set('visible', this.isDirected);
-        this.updatePosition();
     }
 
     // Calculates the coordinates of the edge based on its adjacent vertices.
@@ -123,12 +114,14 @@ class Edge {
     // Adds parallel line offset to positions.
     addParallelOffset(x1, y1, x2, y2) {
         // TODO: Correct parallel Line Math
-        // let slope = Math.abs(y2-y1) / (Math.abs(x2-x1) + 0.0001);
 
-        x1 += this.parallelOffset * 2;
-        x2 += this.parallelOffset * 2;
-        y1 += this.parallelOffset;
-        y2 += this.parallelOffset;
+        let slope = (y2-y1) / (x2-x1);
+        let invSlope = -(1 / slope);
+
+        x1 += 1 * this.parallelOffset;
+        x2 += 1 * this.parallelOffset;
+        y1 += invSlope * this.parallelOffset;
+        y2 += invSlope * this.parallelOffset;
 
         return [x1, y1, x2, y2];
     }
@@ -157,6 +150,50 @@ class Edge {
         return [x1, y1, x2, y2];
     }
 
+    // Updates arrow graphics.
+    updateArrow(x1, y1, x2, y2) {
+        // visibility:
+        this.arrow.set('visible', this.isDirected);
+
+        // angle:
+        let angle = this.calcArrowAngle(x1, y1, x2, y2);
+        this.arrow.set('angle', angle);
+
+        // position:
+        let [x, y] = this.calcArrowPosition(x1, y1, angle)
+        this.arrow.set('left', x);
+        this.arrow.set('top', y);
+
+        this.arrow.setCoords();
+    }
+
+    // Calculates the angle of the arrow.
+    calcArrowAngle(x1, y1, x2, y2) {
+        let x = x2 - x1;
+        let y = y2 - y1;
+
+        let angle = -(Math.atan(x / y) * 180) / Math.PI;
+        if (y < 0) {
+           angle += -180;
+        }
+
+        return(angle);
+    }
+
+    // Calculates the position of the arrow.
+    calcArrowPosition(x1, y1, angle) {
+        let h = 20; // hypotenuse = distance of arrow from center of vertex
+        let angle1 = -(angle * Math.PI) / 180; // convert back to radians
+
+        let o = h * Math.sin(angle1); // opposite = x offset
+        let a = h * Math.cos(angle1); // adjacent = y offset
+
+        let x = x1 + o;
+        let y = y1 + a;
+
+        return [x, y];
+    }
+
     // Toggles the direction of the edge: v1 to v2, v2 to v1, undirected.
     toggleDirection() {
         let result = -1;
@@ -179,7 +216,7 @@ class Edge {
             result = 3;
         }
 
-        this.updateArrow();
+        this.updatePosition();
         return result;
     }
 
