@@ -12,7 +12,7 @@ A live version is hosted at: http://natesgibson.com/graph/.
 
 ## Repository Layout
 ### dist
-Contains 'intex.html' and 'style.css' which I used to style the web app.\
+Contains 'index.html' and 'style.css' which I used to style the web app.\
 'main.js' is built by Webpack. It is a combination of 'index.js' and Node.js library module code.
 
 ### documents
