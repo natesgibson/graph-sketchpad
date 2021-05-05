@@ -6,7 +6,7 @@ This project is a web application developed as my final project for the course M
 
 It is a graph sketchpad, allowing the user to sketch a graph and perform various graph operations.
 
-I made heavy use of the JavaScript library Fabric.js (http://fabricjs.com/).
+I made heavy use of the JavaScript library [Fabric.js](http://fabricjs.com/).
 
 A live version is hosted at: http://natesgibson.com/graph/.
 
